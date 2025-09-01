@@ -7,5 +7,5 @@
         hover:bg-white dark:hover:bg-gray-700 transition">
     <span x-show="theme !== 'dark'">🌙</span>
     <span x-show="theme === 'dark'">☀️</span>
-    <span class="hidden sm:inline" x-text="theme === 'dark' ? 'Claro' : 'Escuro'"></span>
+    <span class="border-gray-200 dark:text-gray-200 dark:focus:border-indigo-700 focus:ring-indigo-700" x-text="theme === 'dark' ? 'Claro' : 'Escuro'"></span>
 </button>
