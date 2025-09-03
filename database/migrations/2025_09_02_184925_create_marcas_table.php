@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('marcas', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome')->unique();
-            $table->timestamps();
+            $table->id();                       // PK auto-incremento 
+            $table->string('nome')->unique();   // Nome da marca, único para evitar duplicidade de marca
+            $table->timestamps();               
         });
     }
 

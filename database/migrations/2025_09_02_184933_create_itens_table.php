@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('itens', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome')->unique();
+            $table->id();                       // PK auto-incremento
+            $table->string('nome')->unique();   // Nome do Item, único para evitar duplicidade.
             $table->timestamps();
         });
     }

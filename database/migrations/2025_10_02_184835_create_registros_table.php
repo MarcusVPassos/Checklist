@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('registros', function (Blueprint $table) {
-            $table->id();
-            $table->string('placa') -> unique();
-            $table->foreignId('marca_id') -> constrained('marcas');
-            $table->string('modelo');
-            $table->text('observacao')->nullable();
-            $table->text('reboque_condutor');
-            $table->string('reboque_placa');
-            $table->boolean('no_patio')->default(true);
-            $table->timestamps();
+            $table->id();                                           // PK do Registro                                           
+            $table->string('placa') -> unique();                    // Placa única, para busca e evitar duplicidade                    
+            $table->foreignId('marca_id') -> constrained('marcas'); // FK para tabela 'marcas', relacionamento 1:N. por convenção marca_id liga com marcas.id                                    
+            $table->string('modelo');                               // Modelo do Veículo        
+            $table->text('observacao')->nullable();                 // Observações se necessitar no registro                    
+            $table->text('reboque_condutor');                       // Nome do condutor do reboque                
+            $table->string('reboque_placa');                        // Placa do reboque                
+            $table->boolean('no_patio')->default(true);             // Tipo boolean para mudança de status ativo = no_patio e false = saiu                        
+            $table->timestamps();                                   // Quando criou e quando foi editado    
         });
     }
 
