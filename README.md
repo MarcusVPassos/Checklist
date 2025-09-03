@@ -25,13 +25,13 @@ Cada veículo terá os seguintes campos:
 - **Tipo:** Carro ou Moto.  
 - **Status:** No pátio ou Saiu.  
 - **Marca** (selecionável) / **Modelo** (texto livre).  
-- **Fotos** do veículo.  
+- **Fotos** do veículo.  [path:/public]
 - **Itens do veículo** (checkbox/multiselect).  
 - **Observação** adicional.  
 - **Reboque**:
   - Nome do condutor.  
   - Placa do reboque.  
-  - Assinatura do responsável.  
+  - Assinatura do responsável.  [path:/assinatura_path]
 
 ---
 
@@ -68,10 +68,10 @@ A documentação também deve incluir **orientações de uso para cada tipo de u
 ------------------
 Para não esquecer enquanto estou fazendo o projeto
 
-storage link para uso de fotos;
+storage link para uso de fotos;  -> criação de novo path em filesystem para assinatura. [OK]
 laravel log activies
-breeze para roles
+breeze para roles [OK]
 darkmode do brezze [OK]
 laravel lang
-laravel permissions
+laravel permissions [OK]
 

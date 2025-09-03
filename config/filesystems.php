@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // ASSINATURAS públicas num disk separado com link próprio /assinaturas
+        'assinaturas_path' => [
+            'driver' => 'local',
+            'root' => storage_path('app/assinaturas_path'),
+            'url' => env('APP_URL').'/assinaturas',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -75,6 +85,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('assinaturas') => storage_path('app/assinaturas_path'),
     ],
 
 ];
