@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Imagem extends Model
 {
+     protected $fillable = ['registro_id', 'path', 'posicao'];
+
     protected $table = 'imagens';
 
     // 1:N Imagem pertence a um registro

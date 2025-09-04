@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('imagens', function (Blueprint $table) {
             $table->id();
             $table->foreignId('registro_id') -> constrained('registros');   // FK para tabela 'registros', relacionamento 1:N. por convenção registro_id liga com registros.id
-            $table->string('public');                                       // Caminho das imagens [path]
+            $table->string('path');                                       // Caminho das imagens [path]
             $table->enum('posicao', [
                 // Carro (obrigatórias *)
                 'frente',                // *

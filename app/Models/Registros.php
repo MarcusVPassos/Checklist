@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Registros extends Model
 {
+    protected $table = 'registros';
+
+    protected $fillable = 
+    [
+        'tipo', 'placa', 'marca_id', 'no_patio', 'modelo', 'observacao', 'reboque_condutor', 'reboque_placa', 'assinatura_path',
+    ];
+
+    protected $casts = 
+    [
+        'no_patio' => 'boolean',
+    ];
+
     // Relacionamento muitos para muitos com Itens N:N
     public function itens(){
         return $this->belongsToMany(Itens::class, 'registros_itens', 'registros_id', 'itens_id');
