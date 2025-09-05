@@ -21,7 +21,31 @@ class RegistroStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        // posições por tipo
+        $carroObrig = [
+            'frente',
+            'lado_direito',
+            'lado_esquerdo',
+            'traseira',
+            'capo_aberto',
+            'numero_do_motor',
+            'painel_lado_direito',
+            'painel_lado_esquerdo',
+        ];
+
+        $motoObrig = [
+            'frente',
+            'lado_direito',
+            'lado_esquerdo',
+            'traseira',
+            'motor_lado_direito',
+            'motor_lado_esquerdo',
+            'painel_moto',
+        ];
+
+        $imgRule = ['image','mimes:jpg,jpeg,png,webp','max:8192']; // Regra base para todas imagens
+
+        $rules = [
             'tipo' => ['required', 'in:carro,moto'],
             'placa' => ['required', 'string', 'max:10','unique:registros,placa'],
             'marca_id' => ['required', 'exists:marcas,id'],
@@ -32,10 +56,37 @@ class RegistroStoreRequest extends FormRequest
             'reboque_placa'=>['required', 'string', 'max:10'],
             'itens'       => ['nullable','array'],
             'itens.*'     => ['integer','exists:itens,id'],  // .* -> Válida cada indice desse array com estas regras.
-            'fotos'       => ['required', 'array'],
-            'fotos.*'     => ['file','mimes:jpg,jpeg,png,webp','max:4096'],
-            'assinatura'  => ['required','file','mimes:png,jpg,jpeg','max:2048'],
+
+            // 'fotos'       => ['required', 'array'],
+            // 'fotos.*'     => ['file','mimes:jpg,jpeg,png,webp','max:4096'],
+
+            'assinatura'  => array_merge(['required','file'], $imgRule),
         ];
+
+        // posições de CARRO (obrigatórias quando tipo = carro)
+        foreach ($carroObrig as $pos) {
+            $rules[$pos] = array_merge(['required_if:tipo,carro'], $imgRule);
+        }
+
+        // posições de MOTO (obrigatórias quando tipo = moto)
+        foreach ($motoObrig as $pos) {
+            $rules[$pos] = array_merge(['required_if:tipo,moto'], $imgRule);
+        }
+
+        // posições opcionais (podem existir para ambos os tipos)
+        $opcionais = [
+            'bateria_carro',
+            'chave_carro',
+            'estepe_do_veiculo',
+            'chave_moto',
+            'bateria_moto',
+        ];
+
+        foreach ($opcionais as $pos) {
+            $rules[$pos] = array_merge(['nullable'], $imgRule);
+        }
+
+        return $rules;
     }
 }
 

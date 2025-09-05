@@ -1,32 +1,43 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight">Novo Registro</h2>
+        <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+            Novo Registro
+        </h2>
     </x-slot>
 
-    <div class="py-6">
+    <div
+        class="py-6"
+        x-data="{
+            tipo: @js(old('tipo','carro')),
+            toUpper(e){ e.target.value = e.target.value.toUpperCase() },
+        }"
+    >
         <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
-            <div class="rounded-lg bg-white p-6 shadow">
-                <form method="POST"
-                      action="{{ route('registros.store') }}"
-                      enctype="multipart/form-data"
-                      class="space-y-6">
+            <div class="rounded-lg bg-white dark:bg-gray-800 p-5 sm:p-6 shadow">
+                <form method="POST" action="{{ route('registros.store') }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
                     {{-- Linha 1: Placa, Tipo, Marca --}}
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                         <div>
                             <x-input-label for="placa" value="Placa" />
-                            <x-text-input id="placa" name="placa" type="text" class="mt-1 block w-full"
-                                          value="{{ old('placa') }}" required />
+                            <x-text-input id="placa" name="placa" type="text"
+                                class="mt-1 block w-full uppercase tracking-wider"
+                                maxlength="8"
+                                value="{{ old('placa') }}"
+                                required
+                                x-on:input="toUpper($event)"
+                                placeholder="ABC1D23" />
                             <x-input-error :messages="$errors->get('placa')" class="mt-2" />
                         </div>
 
                         <div>
                             <x-input-label for="tipo" value="Tipo" />
-                            <select id="tipo" name="tipo" class="mt-1 block w-full rounded-md border-gray-300"
-                                    required>
-                                <option value="carro" @selected(old('tipo')==='carro')>Carro</option>
-                                <option value="moto"  @selected(old('tipo')==='moto')>Moto</option>
+                            <select id="tipo" name="tipo"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900"
+                                    x-model="tipo" required>
+                                <option value="carro">Carro</option>
+                                <option value="moto">Moto</option>
                             </select>
                             <x-input-error :messages="$errors->get('tipo')" class="mt-2" />
                         </div>
@@ -34,12 +45,11 @@
                         <div>
                             <x-input-label for="marca_id" value="Marca" />
                             <select id="marca_id" name="marca_id"
-                                    class="mt-1 block w-full rounded-md border-gray-300" required>
-                                <option value="" disabled {{ old('marca_id') ? '' : 'selected' }}>Selecione...</option>
-                                @foreach($marcas as $marca)
-                                    <option value="{{ $marca->id }}" @selected(old('marca_id')==$marca->id)>
-                                        {{ $marca->nome }}
-                                    </option>
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900"
+                                    required>
+                                <option value="" disabled {{ old('marca_id') ? '' : 'selected' }}>Selecione…</option>
+                                @foreach ($marcas as $marca)
+                                    <option value="{{ $marca->id }}" @selected(old('marca_id') == $marca->id)>{{ $marca->nome }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('marca_id')" class="mt-2" />
@@ -47,17 +57,15 @@
                     </div>
 
                     {{-- Linha 2: Modelo, No pátio --}}
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                         <div class="sm:col-span-2">
                             <x-input-label for="modelo" value="Modelo" />
                             <x-text-input id="modelo" name="modelo" type="text"
-                                          class="mt-1 block w-full"
-                                          value="{{ old('modelo') }}" required />
+                                class="mt-1 block w-full" value="{{ old('modelo') }}" required />
                             <x-input-error :messages="$errors->get('modelo')" class="mt-2" />
                         </div>
 
                         <div class="flex items-end">
-                            {{-- truque para checkbox sempre enviar algo --}}
                             <input type="hidden" name="no_patio" value="0">
                             <label class="inline-flex items-center gap-2">
                                 <input id="no_patio" type="checkbox" name="no_patio" value="1"
@@ -73,25 +81,24 @@
                     <div>
                         <x-input-label for="observacao" value="Observação" />
                         <textarea id="observacao" name="observacao"
-                                  class="mt-1 block w-full rounded-md border-gray-300"
+                                  class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900"
                                   rows="3">{{ old('observacao') }}</textarea>
                         <x-input-error :messages="$errors->get('observacao')" class="mt-2" />
                     </div>
 
-                    {{-- Reboque (OBRIGATÓRIO) --}}
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    {{-- Reboque (obrigatório) --}}
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <x-input-label for="reboque_condutor" value="Condutor do Reboque" />
                             <x-text-input id="reboque_condutor" name="reboque_condutor" type="text"
-                                          class="mt-1 block w-full"
-                                          value="{{ old('reboque_condutor') }}" required />
+                                class="mt-1 block w-full" value="{{ old('reboque_condutor') }}" required />
                             <x-input-error :messages="$errors->get('reboque_condutor')" class="mt-2" />
                         </div>
                         <div>
                             <x-input-label for="reboque_placa" value="Placa do Reboque" />
                             <x-text-input id="reboque_placa" name="reboque_placa" type="text"
-                                          class="mt-1 block w-full"
-                                          value="{{ old('reboque_placa') }}" required />
+                                class="mt-1 block w-full uppercase" value="{{ old('reboque_placa') }}"
+                                x-on:input="toUpper($event)" required />
                             <x-input-error :messages="$errors->get('reboque_placa')" class="mt-2" />
                         </div>
                     </div>
@@ -99,8 +106,8 @@
                     {{-- Itens (N:N) --}}
                     <div>
                         <x-input-label value="Itens" />
-                        <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            @foreach($itens as $item)
+                        <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            @foreach ($itens as $item)
                                 <label class="flex items-center gap-2">
                                     <input type="checkbox" name="itens[]" value="{{ $item->id }}"
                                            @checked(collect(old('itens', []))->contains($item->id))
@@ -114,39 +121,145 @@
                     </div>
 
                     {{-- Assinatura (obrigatória) --}}
-                    <div>
+                    <div x-data="filePreview()" x-init="init()">
                         <x-input-label for="assinatura" value="Assinatura (obrigatória)" />
                         <input id="assinatura" name="assinatura" type="file"
-                               class="mt-1 block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-white hover:file:bg-indigo-700"
-                               required accept=".png,.jpg,.jpeg">
+                               class="mt-1 block w-full text-sm text-gray-900
+                                      file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600
+                                      file:px-4 file:py-2 file:text-white hover:file:bg-indigo-700"
+                               accept=".png,.jpg,.jpeg,.webp" required
+                               @change="pick($event)">
+                        <template x-if="url">
+                            <div class="mt-2">
+                                <img :src="url" alt="Prévia assinatura" class="h-24 rounded border object-contain">
+                            </div>
+                        </template>
                         <x-input-error :messages="$errors->get('assinatura')" class="mt-2" />
                     </div>
 
-                    {{-- Fotos múltiplas --}}
-                    <div>
-                        <x-input-label for="fotos" value="Fotos (múltiplas)" />
-                        <input id="fotos" name="fotos[]" type="file" multiple accept=".jpg,.jpeg,.png,.webp">
+                    {{-- ================= FOTOS ================= --}}
+                    <div class="space-y-6">
+                        @php
+                            $carroObrig = [
+                                'frente' => 'Frente *',
+                                'lado_direito' => 'Lado direito *',
+                                'lado_esquerdo' => 'Lado esquerdo *',
+                                'traseira' => 'Traseira *',
+                                'capo_aberto' => 'Capô aberto *',
+                                'numero_do_motor' => 'Número do motor *',
+                                'painel_lado_direito' => 'Painel Lado Direito *',
+                                'painel_lado_esquerdo' => 'Painel Lado Esquerdo *',
+                            ];
+                            $carroOpc = [
+                                'bateria_carro' => 'Bateria (carro)',
+                                'chave_carro' => 'Chave (carro)',
+                                'estepe_do_veiculo' => 'Estepe do veículo',
+                            ];
+                            $motoObrig = [
+                                'frente' => 'Frente *',
+                                'lado_direito' => 'Lado direito *',
+                                'lado_esquerdo' => 'Lado esquerdo *',
+                                'traseira' => 'Traseira *',
+                                'motor_lado_direito' => 'Motor Lado Direito *',
+                                'motor_lado_esquerdo' => 'Motor Lado Esquerdo *',
+                                'painel_moto' => 'Painel (moto) *',
+                            ];
+                            $motoOpc = [
+                                'chave_moto' => 'Chave (moto)',
+                                'bateria_moto' => 'Bateria (moto)',
+                            ];
+                        @endphp
 
-                        <x-input-error :messages="$errors->get('fotos')" class="mt-2" />
-                        <x-input-error :messages="$errors->get('fotos.*')" class="mt-2" />
+                        {{-- Carro --}}
+<!-- Carro -->
+<template x-if="tipo === 'carro'">
+  <section x-transition>
+    <!-- TODO: aqui fica exatamente o que você já tinha do carro -->
+    <div class="mb-1 flex items-center justify-between">
+      <h3 class="text-base sm:text-lg font-medium">Fotos — Carro</h3>
+      <p class="text-xs sm:text-sm text-gray-600">
+        Campos com <span class="text-red-600 font-semibold">*</span> são obrigatórios.
+      </p>
+    </div>
+
+    <div class="divide-y rounded-md border">
+      <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium bg-gray-50 group-open:rounded-t-md">
+        Obrigatórias
+      </summary>
+      <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+        @foreach ($carroObrig as $name => $label)
+          <x-photo-input :name="$name" :label="$label" :required="true" />
+        @endforeach
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+        @foreach ($carroOpc as $name => $label)
+          <x-photo-input :name="$name" :label="$label" />
+        @endforeach
+      </div>
+    </div>
+  </section>
+</template>
+
+<!-- Moto -->
+<template x-if="tipo === 'moto'">
+  <section x-transition>
+    <!-- TODO: aqui fica exatamente o que você já tinha da moto -->
+    <div class="mb-1 flex items-center justify-between">
+      <h3 class="text-base sm:text-lg font-medium">Fotos — Moto</h3>
+      <p class="text-xs sm:text-sm text-gray-600">
+        Campos com <span class="text-red-600 font-semibold">*</span> são obrigatórios.
+      </p>
+    </div>
+
+    <div class="divide-y rounded-md border">
+      <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium bg-gray-50 group-open:rounded-t-md">
+        Obrigatórias
+      </summary>
+      <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+        @foreach ($motoObrig as $name => $label)
+          <x-photo-input :name="$name" :label="$label" :required="true" />
+        @endforeach
+      </div>
+      <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+        @foreach ($motoOpc as $name => $label)
+          <x-photo-input :name="$name" :label="$label" />
+        @endforeach
+      </div>
+    </div>
+  </section>
+</template>
+
                     </div>
+                    {{-- =============== /FOTOS =============== --}}
 
-                    <div class="flex items-center gap-3">
-                        <x-primary-button>Salvar</x-primary-button>
+                    {{-- Ações --}}
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end pt-4 border-t">
                         <a href="{{ route('registros.index') }}"
-                           class="text-sm text-gray-600 hover:text-gray-900">Cancelar</a>
+                           class="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancelar
+                        </a>
+                        <x-primary-button type="submit" class="justify-center">
+                            Criar registro
+                        </x-primary-button>
                     </div>
-
-                    {{-- bloco de erros gerais (fallback) --}}
-                    @if ($errors->any())
-                        <ul class="mt-4 list-disc pl-5 text-sm text-red-600">
-                            @foreach ($errors->all() as $e)
-                                <li>{{ $e }}</li>
-                            @endforeach
-                        </ul>
-                    @endif
                 </form>
             </div>
         </div>
     </div>
+
+    {{-- Helpers Alpine --}}
+    <script>
+        function filePreview() {
+            return {
+                url: null,
+                init(){ this.url = null; },
+                pick(e){
+                    const f = e.target.files?.[0];
+                    if (!f) { this.url = null; return; }
+                    this.url = URL.createObjectURL(f);
+                }
+            }
+        }
+    </script>
 </x-app-layout>
