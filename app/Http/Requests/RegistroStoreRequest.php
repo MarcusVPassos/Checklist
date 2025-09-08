@@ -43,24 +43,30 @@ class RegistroStoreRequest extends FormRequest
             'painel_moto',
         ];
 
-        $imgRule = ['image','mimes:jpg,jpeg,png,webp','max:8192']; // Regra base para todas imagens
+        $imgRule = ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192']; // Regra base para todas imagens
 
         $rules = [
             'tipo' => ['required', 'in:carro,moto'],
-            'placa' => ['required', 'string', 'max:10','unique:registros,placa'],
+            'placa' => ['required', 'string', 'max:10', 'unique:registros,placa'],
             'marca_id' => ['required', 'exists:marcas,id'],
             'modelo' => ['required', 'string', 'max:120'],
             'no_patio' => ['boolean'],  // se não vier dados, usa true
             'observacao' => ['nullable', 'string'],  // se não vier dados, usa null
-            'reboque_condutor'=>['required', 'string', 'max:120'],
-            'reboque_placa'=>['required', 'string', 'max:10'],
-            'itens'       => ['nullable','array'],
-            'itens.*'     => ['integer','exists:itens,id'],  // .* -> Válida cada indice desse array com estas regras.
+            'reboque_condutor' => ['required', 'string', 'max:120'],
+            'reboque_placa' => ['required', 'string', 'max:10'],
+            'itens'       => ['nullable', 'array'],
+            'itens.*'     => ['integer', 'exists:itens,id'],  // .* -> Válida cada indice desse array com estas regras.
 
             // 'fotos'       => ['required', 'array'],
             // 'fotos.*'     => ['file','mimes:jpg,jpeg,png,webp','max:4096'],
 
-            'assinatura'  => array_merge(['required','file'], $imgRule),
+            // 'assinatura'  => array_merge(['required', 'file'], $imgRule),
+            'assinatura_b64' => [
+                'required',
+                'string',
+                // garante que venha algo como data:image/png;base64,AAAA...
+                'regex:/^data:image\\/(png|jpe?g|webp);base64,/i',
+            ],
         ];
 
         // posições de CARRO (obrigatórias quando tipo = carro)

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+
 class RegistroController extends Controller
 {
     public function index(){
@@ -83,7 +84,7 @@ public function store(RegistroStoreRequest $request)
 
             $data = $request->validated();
 
-            $tmpPath = $request->file('assinatura')->store('assinaturas', 'public');
+            // $tmpPath = $request->file('assinatura')->store('assinaturas', 'public');
 
             // 1) Cria o registro (sem imagens ainda)
             $registro = Registros::create([
@@ -95,18 +96,29 @@ public function store(RegistroStoreRequest $request)
                 'observacao'        => $data['observacao'] ?? null,
                 'reboque_condutor'  => $data['reboque_condutor'],
                 'reboque_placa'     => $data['reboque_placa'],
-                'assinatura_path'  => $tmpPath,
+                'assinatura_path'  => '',
             ]);
 
+            // 2) Assinatura (Base64 -> arquivo no path final)
+            // Espera "data:image/png;base64,AAAA..."
+            [$meta, $payload] = explode(',', $data['assinatura_b64'], 2);
+            preg_match('/^data:image\\/(png|jpe?g|webp);base64/i', $meta, $m);
+            $ext = strtolower($m[1] ?? 'png');
+            if ($ext === 'jpeg') $ext = 'jpg';
+
             // 3) renomeia p/ nome final e atualiza o caminho NO BANCO
-            $stamp   = now()->format('Ymd_His');
-            $assExt  = $request->file('assinatura')->extension(); // ou getClientOriginalExtension()
+            // $stamp   = now()->format('Ymd_His');
+            // $assExt  = $request->file('assinatura')->extension(); // ou getClientOriginalExtension()
+
+            $bin    = base64_decode($payload);
+            $stamp  = now()->format('Ymd_His');               // "carimbo" p/ nome único
             $assDir  = "assinaturas/{$registro->id}";
-            $assName = "checklist_ass_{$stamp}.{$assExt}";
+            // $assName = "checklist_ass_{$stamp}.{$assExt}";
+            $assName= "checklist_ass_{$stamp}.{$ext}";        // nome final
             $target  = "{$assDir}/{$assName}";
 
             Storage::disk('public')->makeDirectory($assDir);
-            Storage::disk('public')->move($tmpPath, $target);
+            Storage::disk('public')->put($target, $bin);
 
             // grava o caminho verdadeiro
             $registro->update(['assinatura_path' => $target]);
