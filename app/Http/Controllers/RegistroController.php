@@ -79,21 +79,6 @@ class RegistroController extends Controller
 
 public function store(RegistroStoreRequest $request)
     {
-                // LOG INICIAL (antes de qualquer coisa)
-        Log::info('registros.store:request-received', [
-            'ip'              => $request->ip(),
-            'user_agent'      => $request->userAgent(),
-            'method'          => $request->method(),
-            'uri'             => $request->getRequestUri(),
-            'content_length'  => $request->header('content-length'),
-            'files_count'     => count($request->allFiles()),
-            'file_keys'       => array_keys($request->allFiles()),
-            'post_max_size'   => ini_get('post_max_size'),
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'max_file_uploads'=> ini_get('max_file_uploads'),
-        ]);
-
-
         return DB::transaction(function () use ($request) {
 
             $data = $request->validated();
@@ -112,8 +97,6 @@ public function store(RegistroStoreRequest $request)
                 'reboque_placa'     => $data['reboque_placa'],
                 'assinatura_path'  => $tmpPath,
             ]);
-
-            Log::info('registros.store:registro-created', ['registro_id' => $registro->id, 'tmpPath' => $tmpPath]);
 
             // 3) renomeia p/ nome final e atualiza o caminho NO BANCO
             $stamp   = now()->format('Ymd_His');
