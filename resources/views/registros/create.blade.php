@@ -279,10 +279,14 @@
             }
         }
     </script>
+    <style>
+        /* impede a página de “rolar” enquanto assina no iOS */
+        .e-signpad canvas {
+            touch-action: none;
+        }
+    </style>
 
-    {{-- Lib do pacote (public/vendor/sign-pad/sign-pad.min.js) --}}
     <script src="https://unpkg.com/signature_pad@4.0.10/dist/signature_pad.umd.min.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.querySelector('form[action="{{ route('registros.store') }}"]');
@@ -291,26 +295,47 @@
             const clear = box.querySelector('#sig-clear');
             const hidden = box.querySelector('#sig-b64');
 
-            // cria o pad
             const pad = new SignaturePad(canvas, {
                 backgroundColor: 'rgba(255,255,255,1)'
             });
 
-            // deixa o canvas nítido e sem deslocamento
+            // redimensiona SEM perder o traço (salva/restaura o path)
             const fit = () => {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 const rect = canvas.getBoundingClientRect();
+
+                // defina TAMBÉM o tamanho CSS (importante no iOS)
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+
+                // salvar o desenho antes de mexer no tamanho interno
+                const data = pad.toData();
+
                 canvas.width = Math.round(rect.width * ratio);
                 canvas.height = Math.round(rect.height * ratio);
-                canvas.getContext('2d').setTransform(ratio, 0, 0, ratio, 0, 0);
+                const ctx = canvas.getContext('2d');
+                ctx.scale(ratio, ratio);
 
-                // se já havia base64 (volta de validação), redesenha
-                if (hidden.value) pad.fromDataURL(hidden.value).catch(() => {});
+                // restaura o traço
+                pad.clear();
+                if (data.length) pad.fromData(data);
             };
+
+            // 200px de altura visual (a sua div já dá largura 100%)
+            canvas.style.height = '200px';
+            // monta uma vez
             fit();
-            window.addEventListener('resize', fit, {
+
+            // iOS muda viewport em rotação/teclado → debounce do resize
+            let rAF;
+            const onResize = () => {
+                cancelAnimationFrame(rAF);
+                rAF = requestAnimationFrame(fit);
+            };
+            window.addEventListener('resize', onResize, {
                 passive: true
             });
+            window.addEventListener('orientationchange', onResize);
 
             // limpar
             clear.addEventListener('click', () => {
@@ -318,40 +343,19 @@
                 hidden.value = '';
             });
 
-            // no submit do form, garante a base64 (e bloqueia se estiver vazio)
+            // dica: já captura a cada traço (se houver resize depois, você não perde)
+            pad.addEventListener('endStroke', () => {
+                if (!pad.isEmpty()) hidden.value = pad.toDataURL('image/png');
+            });
+
+            // no submit, garante o base64
             form.addEventListener('submit', (e) => {
                 if (pad.isEmpty() && !hidden.value) {
                     e.preventDefault();
                     alert('Assine para continuar.');
                     return;
                 }
-                hidden.value = pad.toDataURL('image/png');
-            });
-        });
-    </script>
-
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.e-signpad canvas').forEach((canvas) => {
-
-                const fit = () => {
-                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    // mede o tamanho real que o canvas ocupa na tela
-                    const rect = canvas.getBoundingClientRect();
-                    // ajusta o "tamanho interno" (em pixels) para bater com o visual
-                    canvas.width = Math.round(rect.width * ratio);
-                    canvas.height = Math.round(rect.height * ratio);
-                    // aplica a matriz para que 1 unidade de desenho = 1px CSS
-                    const ctx = canvas.getContext('2d');
-                    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-                };
-
-                fit(); // na carga
-                window.addEventListener('resize', fit, {
-                    passive: true
-                }); // em resize
+                if (!hidden.value) hidden.value = pad.toDataURL('image/png');
             });
         });
     </script>
