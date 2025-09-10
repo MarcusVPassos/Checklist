@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('itens', function (Blueprint $table) {
             $table->id();                       // PK auto-incremento
             $table->string('nome')->unique();   // Nome do Item, único para evitar duplicidade.
-            $table->timestamps();
+            $table->timestamps();               // created_at e updated_at
         });
     }
 

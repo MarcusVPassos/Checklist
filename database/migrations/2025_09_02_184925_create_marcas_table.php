@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('marcas', function (Blueprint $table) {
             $table->id();                       // PK auto-incremento 
             $table->string('nome')->unique();   // Nome da marca, único para evitar duplicidade de marca
-            $table->timestamps();               
+            $table->timestamps();               // created_at e updated_at
         });
     }
 

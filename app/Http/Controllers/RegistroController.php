@@ -2,41 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RegistroStoreRequest;
+use App\Http\Requests\RegistroStoreRequest; // FormRequest com validação centralizada (melhor prática)
 use App\Models\Imagem;
 use App\Models\Itens;
 use App\Models\Marcas;
 use App\Models\Registros;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\DB; // Para transações atômicas (begin/commit/rollback)
+use Illuminate\Support\Facades\Log; // Para registrar sucessos/erros em logs
+use Illuminate\Support\Facades\Storage; // Para salvar arquivos no disco configurado
 
 class RegistroController extends Controller
 {
     public function index()
     {
-        // Carrega só o necessário no grid
+        /*
+         * Objetivo: carregar a listagem de forma leve e rápida.
+         * - select(): traz só as colunas que a grade precisa.
+         * - with(): eager loading controlado para evitar N+1 (apenas campos necessários).
+         * - latest('id'): ordenação do mais novo para o mais antigo.
+         * - cursorPaginate(6): paginação por cursor → ideal para "Carregar mais" sem custo crescente de OFFSET.
+         */
         $registros = Registros::query()
             ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path'])
             ->with([
-                'marca:id,nome',
-                // só o que a lista usa para a capa
-                'imagens:id,registro_id,posicao,path',
+                'marca:id,nome', // join leve apenas com os campos usados
+                'imagens:id,registro_id,posicao,path', // apenas o necessário para mostrar a capa
             ])
             ->latest('id')
             ->cursorPaginate(6); // melhor para "load more"
 
+        // Retorna para a view Blade com a coleção paginada por cursor     
         return view('registros.index', compact('registros'));
     }
 
-    // endpoint leve para o modal (detalhes sob demanda)
-    // app/Http/Controllers/RegistroController.php
-
+    /*
+     * Endpoint de detalhes "sob demanda" para modal.
+     * - Usamos Route Model Binding (Registros $registro).
+     * - Carregamos apenas quando o usuário abre o modal → menos peso na página principal.
+     * - Retornamos JSON estruturado, pronto para o Alpine/JS montar o modal.
+     */
     public function show(Registros $registro)
     {
         try {
+            // Rótulos amigáveis para as posições de fotos (usado no front)
             $rotulos = [
                 'frente' => 'Frente',
                 'lado_direito' => 'Lado direito',
@@ -56,26 +65,31 @@ class RegistroController extends Controller
                 'bateria_moto' => 'Bateria (moto)',
             ];
 
+            // Carrega relações necessárias para o modal
             $registro->load([
                 'marca:id,nome',
-                'itens:id,nome',
-                'imagens:id,registro_id,posicao,path',
+                'itens:id,nome', // relação N:N (pivot) – apenas os nomes usados na UI
+                'imagens:id,registro_id,posicao,path', // imagens para galeria/slides do modal
             ]);
 
+            // Monta resposta JSON com campos prontos para o front
             return response()->json([
                 'id'               => $registro->id,
                 'placa'            => $registro->placa,
                 'tipo'             => $registro->tipo,
-                'no_patio'         => (bool) $registro->no_patio,
+                'no_patio'         => (bool) $registro->no_patio, // coerção para boolean
                 'marca'            => $registro->marca?->nome,
                 'modelo'           => $registro->modelo,
                 'observacao'       => $registro->observacao,
                 'reboque_condutor' => $registro->reboque_condutor,
                 'reboque_placa'    => $registro->reboque_placa,
                 'assinatura'       => $registro->assinatura_path ? asset('storage/' . $registro->assinatura_path) : null,
+                // datas em ISO 8601 (padrão robusto para JS)
                 'created_at'       => optional($registro->created_at)->toIso8601String(),
                 'updated_at'       => optional($registro->updated_at)->toIso8601String(),
+                // itens do pivot já “flattened” para array de nomes
                 'itens'            => $registro->itens->pluck('nome')->values(),
+                // slides prontos para o carrossel, com label humano
                 'slides'           => $registro->imagens->map(fn($img) => [
                     'url'     => asset('storage/' . $img->path),
                     'posicao' => $img->posicao,
@@ -83,78 +97,41 @@ class RegistroController extends Controller
                 ])->values(),
             ]);
         } catch (\Throwable $e) {
+            // Log de erro com contexto (id) para depuração
             Log::error('registros.show', ['id' => $registro->id, 'err' => $e->getMessage()]);
             return response()->json(['message' => 'Falha ao carregar o registro.'], 500);
         }
     }
 
-
     public function create()
     {
+        /**
+         * Carrega dados necessários para o formulário:
+         * - Marcas e Itens vão popular selects/checkboxes.
+         * - OrderBy para UX (lista em ordem alfabética).
+         */
         return view('registros.create', [
             'marcas' => Marcas::orderBy('nome')->get(),
             'itens' => Itens::orderBy('nome')->get(),
         ]);
     }
 
-    // public function store(RegistroStoreRequest $request) // Puxando a regra de validação escrita em RegistroStoreRequest.
-    // {
-    //     return DB::transaction(function () use ($request) { // transaction -> se der erro durante a execução de algum envio encerra o processo e não envia nenhum dos dados.
-    //         $data = $request->validated();
-
-    //         // dd($request->hasFile('assinatura'), $request->file('assinatura'), $request->allFiles());  --> Debug para ver se estava chegando imagem
-    //         $tmpPath = $request->file('assinatura')->store('assinaturas', 'public'); // Faz primeiro o envio da foto depois o registro com as regras. Tenho que ver algo para ajustar isso
-
-    //         // Cria o registro (sem itens/fotos/assinaturas por enquanto)
-    //         $registro = Registros::create([
-    //             'tipo' => $data['tipo'],
-    //             'placa' => $data['placa'],
-    //             'marca_id' => $data['marca_id'],
-    //             'modelo' => $data['modelo'],
-    //             'no_patio' => $data['no_patio'],
-    //             'observacao' => $data['observacao'],
-    //             'reboque_condutor' => $data['reboque_condutor'],
-    //             'reboque_placa' => $data['reboque_placa'],
-    //             'assinatura_path'  => $tmpPath,
-    //         ]);
-
-    //         // Assinatura (Obrigatória)
-    //         // $assinaturaPath = $request->file('assinatura')->store("assinaturas/{$registro->id}", 'public');
-    //         $finalPath = "assinaturas/{$registro->id}/" . basename($tmpPath);
-    //         Storage::disk('public')->move($tmpPath, $finalPath);
-
-    //         $registro -> update(['assinatura_path' => $finalPath]);
-
-    //         //Itens N:N
-    //         if (!empty($data['itens'])){
-    //             $registro->itens()->sync($data['itens'] ?? []);  // se não vier, sincroniza vazio
-    //         }
-
-    //         foreach ($request->file('fotos', []) as $foto){
-    //             $path = $foto->store("registros/{$registro->id}", 'public');
-    //             Imagem::create([
-    //                 'registro_id' => $registro->id,
-    //                 'path' => $path,
-    //                 // 'posicao' => 'frente' // se quiser tratar posições aqui
-    //             ]);
-    //         }
-
-    //         return response()-> json(  // response json, para retorna o valor 201 de criado
-    //             $registro->load(['marca', 'itens', 'imagens']), // eager loading para carregar os relacionamentos 
-    //             201
-    //         );
-    //     });
-    // }
-
     public function store(RegistroStoreRequest $request)
     {
+        /*
+         * Envolve todo o processo em uma transação para garantir consistência:
+         * - Se qualquer etapa falhar (criar registro, salvar assinatura, imagens, pivot), tudo é revertido.
+         * - Mantém o banco sincronizado com os arquivos no storage (melhor integridade).
+         */
         return DB::transaction(function () use ($request) {
-
+            // Dados já validados pela FormRequest (sanitizados e com regras aplicadas)
             $data = $request->validated();
 
-            // $tmpPath = $request->file('assinatura')->store('assinaturas', 'public');
-
-            // 1) Cria o registro (sem imagens ainda)
+            /*
+             * 1) Cria o registro (sem imagens e com assinatura_path vazio por enquanto).
+             * - Precisamos do ID do registro para montar os diretórios/nomes dos arquivos.
+             * - assinatura_path é atualizado após gravarmos o arquivo Base64.
+             */
             $registro = Registros::create([
                 'tipo'              => $data['tipo'],
                 'placa'             => $data['placa'],
@@ -167,34 +144,50 @@ class RegistroController extends Controller
                 'assinatura_path'  => '',
             ]);
 
-            // 2) Assinatura (Base64 -> arquivo no path final)
-            // Espera "data:image/png;base64,AAAA..."
-            [$meta, $payload] = explode(',', $data['assinatura_b64'], 2);
+            /**
+             * 2) Assinatura (Base64 → arquivo):
+             * - Recebe no campo "assinatura_b64" algo como: "data:image/png;base64,AAAA..."
+             * - Separar metadados do payload, detectar extensão, decodificar e salvar no storage/public.
+             */
+            [$meta, $payload] = explode(',', $data['assinatura_b64'], 2); // [ "data:image/png;base64", "AAA..." ]
             preg_match('/^data:image\\/(png|jpe?g|webp);base64/i', $meta, $m);
-            $ext = strtolower($m[1] ?? 'png');
-            if ($ext === 'jpeg') $ext = 'jpg';
+            $ext = strtolower($m[1] ?? 'png'); // fallback seguro para png
+            if ($ext === 'jpeg') $ext = 'jpg'; // normaliza para 'jpg'
 
             // 3) renomeia p/ nome final e atualiza o caminho NO BANCO
             // $stamp   = now()->format('Ymd_His');
             // $assExt  = $request->file('assinatura')->extension(); // ou getClientOriginalExtension()
 
+            // Decodifica o Base64 em binário
             $bin    = base64_decode($payload);
-            $stamp  = now()->format('Ymd_His');               // "carimbo" p/ nome único
+            // carimbo de data/hora para nomes únicos e rastreáveis
+            $stamp  = now()->format('Ymd_His');    
+            // diretório por registro → organização e possibilidade de limpeza pontual || "carimbo" p/ nome único
             $assDir  = "assinaturas/{$registro->id}";
-            // $assName = "checklist_ass_{$stamp}.{$assExt}";
+            // nome de arquivo padronizado (facilita localizar no storage)
             $assName = "checklist_ass_{$stamp}.{$ext}";        // nome final
             $target  = "{$assDir}/{$assName}";
 
+            // garante que a pasta exista e grava o arquivo no disco "public"
             Storage::disk('public')->makeDirectory($assDir);
             Storage::disk('public')->put($target, $bin);
 
-            // grava o caminho verdadeiro
+            // Atualiza o caminho verdadeiro da assinatura no banco
             $registro->update(['assinatura_path' => $target]);
 
-            // 3) Itens (N:N)
+            /**
+             * 3) Itens (relação N:N):
+             * - Sincroniza a tabela pivô com os IDs recebidos.
+             * - Se nada vier, mantém vazio (sem erro).
+             */
             $registro->itens()->sync($data['itens'] ?? []);
 
-            // 4) Imagens por posição (1:1 por posição dentro do registro)
+            /**
+             * 4) Upload das imagens por posição:
+             * - Cada posição é 1:1 dentro do registro (updateOrCreate).
+             * - Para CARRO, você padronizou nome: "checklist_car_{datahora}.{ext}".
+             * - Para MOTO, manteve store() padrão (hash) — como alinhado anteriormente.
+             */
             $todasPosicoes = [
                 // para os dois 
                 'frente',
@@ -220,14 +213,15 @@ class RegistroController extends Controller
             ];
 
             foreach ($todasPosicoes as $pos) {
+                // Se o input dessa posição não veio como arquivo, pula
                 if (!$request->hasFile($pos)) continue;
 
                 $file  = $request->file($pos);
-                $ext   = $file->extension();
-                $dir   = "registros/{$registro->id}/{$pos}";
+                $ext   = $file->extension(); // extensão inferida (segura por validação)
+                $dir   = "registros/{$registro->id}/{$pos}"; // organiza por registro/posição
 
                 if ($data['tipo'] === 'carro') {
-                    // Nome pedido: checklist_car_datahora
+                    // Para carro, padroniza nome amigável + timestamp (facilita manutenção)
                     $fname = "checklist_car_{$stamp}.{$ext}";
                     $path  = $file->storeAs($dir, $fname, 'public');
                 } else {
@@ -235,6 +229,7 @@ class RegistroController extends Controller
                     $path  = $file->store($dir, 'public');
                 }
 
+                // Garante 1:1 por posição: se já existir, atualiza; senão cria
                 Imagem::updateOrCreate(
                     ['registro_id' => $registro->id, 'posicao' => $pos],
                     [
@@ -245,8 +240,13 @@ class RegistroController extends Controller
                     ]
                 );
             }
+            // Log de sucesso com o ID recém-criado (auditoria)
             Log::info('registros.store:success', ['registro_id' => $registro->id]);
-            // Se for API: retorna JSON; se for web: redireciona com flash
+            /**
+             * Retorno:
+             * - Para app web: redireciona com flash message.
+             * - (Se fosse API) devolveríamos JSON 201 com payload do registro.
+             */
             return redirect()
                 ->route('registros.index')
                 ->with('success', 'Registro criado com sucesso!');

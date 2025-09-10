@@ -13,13 +13,28 @@ return new class extends Migration
     public function up(): void
     {
         Schema:: create ('registros_itens', function (Blueprint $table){
-            // FK para 'registros.id'. Usa o helper 'constrained()' para criar a constraint.
+            /**
+             * FK para a tabela 'registros'.
+             * - Cria coluna registros_id (BIGINT UNSIGNED).
+             * - Cria índice automaticamente.
+             * - Cria constraint FOREIGN KEY (registros_id → registros.id).
+             */
             $table -> foreignId('registros_id') -> constrained('registros');
 
-            // FK para 'itens.id'.
+            /**
+             * FK para a tabela 'itens'.
+             * - Cria coluna itens_id (BIGINT UNSIGNED).
+             * - Cria índice automaticamente.
+             * - Cria constraint FOREIGN KEY (itens_id → itens.id).
+             */
             $table -> foreignId('itens_id') -> constrained('itens');
 
-            // Define a PK composta (cada par registro+item é unico)
+            /**
+             * Define chave primária composta.
+             * - Garante que o mesmo item não seja vinculado duas vezes
+             *   ao mesmo registro.
+             * - Exemplo: não pode ter (registro 10, item 5) repetido.
+             */
             $table -> primary (['registros_id', 'itens_id']);
         });
     }

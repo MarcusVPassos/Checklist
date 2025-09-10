@@ -4,24 +4,38 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * FormRequest responsável por validar os dados
+ * no momento da criação de um Registro.
+ *
+ * Vantagens de usar FormRequest:
+ * - Centraliza as regras de validação fora do controller.
+ * - Facilita manutenção e testes.
+ * - Garante que só dados válidos chegam no método store().
+ */
 class RegistroStoreRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Define se o usuário está autorizado a usar esse request.
+     * Aqui deixamos true (qualquer usuário autenticado pode).
+     * Em projetos mais avançados, integramos com políticas/permissions.
      */
     public function authorize(): bool
     {
         return true; // Depois vem com as permissions
     }
 
+
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Define as regras de validação para cada campo enviado.
+     * Docs: https://laravel.com/docs/12.x/validation
      */
     public function rules(): array
     {
-        // posições por tipo
+        /**
+         * Listas de posições obrigatórias dependendo do tipo (carro/moto).
+         * Isso simplifica a lógica em vez de escrever várias regras duplicadas.
+         */
         $carroObrig = [
             'frente',
             'lado_direito',
@@ -43,8 +57,24 @@ class RegistroStoreRequest extends FormRequest
             'painel_moto',
         ];
 
+        /**
+         * Regra base para todas as imagens:
+         * - type: image
+         * - mimes: apenas jpg/jpeg/png/webp
+         * - max: até 8 MB
+         */
         $imgRule = ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192']; // Regra base para todas imagens
 
+        /**
+         * Regras iniciais (comuns a todos os tipos).
+         * - required: campo obrigatório
+         * - in: restringe valores possíveis
+         * - unique: garante que a placa não se repita
+         * - exists: valida se ID existe em outra tabela
+         * - nullable: aceita vazio/null
+         * - array / itens.*: garante que o array é válido e cada índice aponta para IDs válidos
+         * - regex: garante formato específico (no caso, assinatura Base64).
+         */
         $rules = [
             'tipo' => ['required', 'in:carro,moto'],
             'placa' => ['required', 'string', 'max:10', 'unique:registros,placa'],
@@ -56,9 +86,6 @@ class RegistroStoreRequest extends FormRequest
             'reboque_placa' => ['required', 'string', 'max:10'],
             'itens'       => ['nullable', 'array'],
             'itens.*'     => ['integer', 'exists:itens,id'],  // .* -> Válida cada indice desse array com estas regras.
-
-            // 'fotos'       => ['required', 'array'],
-            // 'fotos.*'     => ['file','mimes:jpg,jpeg,png,webp','max:4096'],
 
             // 'assinatura'  => array_merge(['required', 'file'], $imgRule),
             'assinatura_b64' => [
@@ -96,4 +123,14 @@ class RegistroStoreRequest extends FormRequest
     }
 }
 
-// .* é o atalho do Laravel para validar cada valor de um array
+/**
+ * Extra:
+ * - O sufixo ".*" em itens.* significa "valide cada índice do array itens".
+ *   Exemplo:
+ *   itens = [1, 2, 3]
+ *   → valida que cada um é integer e existe na tabela itens.
+ *
+ * - required_if é o que garante diferenciação:
+ *   se tipo = carro → exige fotos de carro
+ *   se tipo = moto  → exige fotos de moto
+ */
