@@ -1,24 +1,28 @@
 <x-app-layout>
+    {{-- named slot "header" do componente Blade <x-app-layout> --}}
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             Novo Registro
         </h2>
     </x-slot>
 
+    {{-- Alpine: estado local do formulário (tipo e helper p/ uppercase da placa) --}}
     <div class="py-6" x-data="{
-        tipo: @js(old('tipo', 'carro')),
+        tipo: @js(old('tipo', 'carro')),  {{-- @js serializa o PHP->JS; old() repopula em caso de erro --}}
         toUpper(e) { e.target.value = e.target.value.toUpperCase() },
     }">
         <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
             <div class="rounded-lg bg-white dark:bg-gray-800 p-5 sm:p-6 shadow">
+                {{-- FORM (com CSRF e multipart p/ upload) --}}
                 <form method="POST" action="{{ route('registros.store') }}" enctype="multipart/form-data"
                     class="space-y-6">
-                    @csrf
+                    @csrf {{-- token anti-CSRF obrigatório em POST --}}
 
                     {{-- Linha 1: Placa, Tipo, Marca --}}
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                         <div>
                             <x-input-label for="placa" value="Placa" />
+                            {{-- old('placa') mantém valor quando validação falha; x-on:input uppercase ao digitar --}}
                             <x-text-input id="placa" name="placa" type="text"
                                 class="mt-1 block w-full uppercase tracking-wider" maxlength="8"
                                 value="{{ old('placa') }}" required x-on:input="toUpper($event)"
@@ -28,6 +32,7 @@
 
                         <div>
                             <x-input-label for="tipo" value="Tipo" />
+                            {{-- x-model mantém o reativo do Alpine para alternar bloco Carro/Moto --}}
                             <select id="tipo" name="tipo"
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900" x-model="tipo"
                                 required>
@@ -39,6 +44,7 @@
 
                         <div>
                             <x-input-label for="marca_id" value="Marca" />
+                            {{-- popular via controller (compact('marcas')); old seleciona a anterior --}}
                             <select id="marca_id" name="marca_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900" required>
                                 <option value="" disabled {{ old('marca_id') ? '' : 'selected' }}>Selecione…
@@ -62,6 +68,7 @@
                         </div>
 
                         <div class="flex items-end">
+                            {{-- hidden + checkbox: garante envio 0/1 para booleano --}}
                             <input type="hidden" name="no_patio" value="0">
                             <label class="inline-flex items-center gap-2">
                                 <input id="no_patio" type="checkbox" name="no_patio" value="1"
@@ -113,22 +120,7 @@
                         <x-input-error :messages="$errors->get('itens.*')" class="mt-2" />
                     </div>
 
-                    {{-- Assinatura (obrigatória) --}}
-                    {{-- <div x-data="filePreview()" x-init="init()">
-                        <x-input-label for="assinatura" value="Assinatura (obrigatória)" />
-                        <input id="assinatura" name="assinatura" type="file"
-                               class="mt-1 block w-full text-sm text-gray-900
-                                      file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600
-                                      file:px-4 file:py-2 file:text-white hover:file:bg-indigo-700"
-                               accept=".png,.jpg,.jpeg,.webp" required
-                               @change="pick($event)">
-                        <template x-if="url">
-                            <div class="mt-2">
-                                <img :src="url" alt="Prévia assinatura" class="h-24 rounded border object-contain">
-                            </div>
-                        </template>
-                        <x-input-error :messages="$errors->get('assinatura')" class="mt-2" />
-                    </div> --}}
+                    {{-- Assinatura (via SignaturePad) --}}
                     <div class="space-y-2 e-signpad">
                         <x-input-label value="Assinatura (obrigatória)" />
                         <div class="rounded-md border bg-white p-2">
@@ -148,6 +140,7 @@
 
 
                     {{-- ================= FOTOS ================= --}}
+                    {{-- Os arrays com labels por tipo ficam no escopo da view --}}
                     <div class="space-y-6">
                         @php
                             $carroObrig = [
@@ -180,8 +173,7 @@
                             ];
                         @endphp
 
-                        {{-- Carro --}}
-                        <!-- Carro -->
+                        {{-- Bloco Carro (Alpine x-if) --}}
                         <template x-if="tipo === 'carro'">
                             <section x-transition>
                                 <!-- TODO: aqui fica exatamente o que você já tinha do carro -->
@@ -212,7 +204,7 @@
                             </section>
                         </template>
 
-                        <!-- Moto -->
+                        {{-- Bloco Moto (Alpine x-if) --}}
                         <template x-if="tipo === 'moto'">
                             <section x-transition>
                                 <!-- TODO: aqui fica exatamente o que você já tinha da moto -->
@@ -260,32 +252,18 @@
         </div>
     </div>
 
-    {{-- Helpers Alpine --}}
-    <script>
-        function filePreview() {
-            return {
-                url: null,
-                init() {
-                    this.url = null;
-                },
-                pick(e) {
-                    const f = e.target.files?.[0];
-                    if (!f) {
-                        this.url = null;
-                        return;
-                    }
-                    this.url = URL.createObjectURL(f);
-                }
-            }
-        }
-    </script>
+    {{-- estilo específico: melhorar experiência do canvas no iOS --}}
+    @push('styles')
     <style>
         /* impede a página de “rolar” enquanto assina no iOS */
         .e-signpad canvas {
             touch-action: none;
         }
     </style>
+    @endpush
 
+    @push('scripts')
+    {{-- SignaturePad + boot da captura de assinatura --}}
     <script src="https://unpkg.com/signature_pad@4.0.10/dist/signature_pad.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -299,7 +277,7 @@
                 backgroundColor: 'rgba(255,255,255,1)'
             });
 
-            // redimensiona SEM perder o traço (salva/restaura o path)
+            // redimensiona SEM perder o traço (salva/restaura o path)  || (fit) ajusta o canvas ao DPR sem perder o traço
             const fit = () => {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 const rect = canvas.getBoundingClientRect();
@@ -359,4 +337,27 @@
             });
         });
     </script>
+    @endpush
+
+    @push('scripts')
+    {{-- Helpers Alpine: previsualização de arquivo (se usar input file convencional) --}}
+    <script>
+        function filePreview() {
+            return {
+                url: null,
+                init() {
+                    this.url = null;
+                },
+                pick(e) {
+                    const f = e.target.files?.[0];
+                    if (!f) {
+                        this.url = null;
+                        return;
+                    }
+                    this.url = URL.createObjectURL(f);
+                }
+            }
+        }
+    </script>
+    @endpush
 </x-app-layout>

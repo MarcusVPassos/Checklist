@@ -9,6 +9,8 @@ Route::get('/', function () {
 });
 
 Route::resource('registros', RegistroController::class);
+Route::get('/registros/{registro}', [RegistroController::class, 'show'])->name('registros.show');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');

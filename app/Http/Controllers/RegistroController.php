@@ -15,14 +15,82 @@ use Illuminate\Support\Facades\Storage;
 
 class RegistroController extends Controller
 {
-    public function index(){
-        // lista + eager loading para evitar N+1
-        $registros = Registros::with(['marca', 'imagens'])->latest()->paginate(10);
+    public function index()
+    {
+        // Carrega só o necessário no grid
+        $registros = Registros::query()
+            ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path'])
+            ->with([
+                'marca:id,nome',
+                // só o que a lista usa para a capa
+                'imagens:id,registro_id,posicao,path',
+            ])
+            ->latest('id')
+            ->cursorPaginate(6); // melhor para "load more"
 
         return view('registros.index', compact('registros'));
     }
 
-    public function create(){
+    // endpoint leve para o modal (detalhes sob demanda)
+    // app/Http/Controllers/RegistroController.php
+
+    public function show(Registros $registro)
+    {
+        try {
+            $rotulos = [
+                'frente' => 'Frente',
+                'lado_direito' => 'Lado direito',
+                'lado_esquerdo' => 'Lado esquerdo',
+                'traseira' => 'Traseira',
+                'capo_aberto' => 'Capô aberto',
+                'numero_do_motor' => 'Número do motor',
+                'painel_lado_direito' => 'Painel (lado direito)',
+                'painel_lado_esquerdo' => 'Painel (lado esquerdo)',
+                'bateria_carro' => 'Bateria (carro)',
+                'chave_carro' => 'Chave (carro)',
+                'estepe_do_veiculo' => 'Estepe',
+                'motor_lado_direito' => 'Motor (lado direito)',
+                'motor_lado_esquerdo' => 'Motor (lado esquerdo)',
+                'painel_moto' => 'Painel (moto)',
+                'chave_moto' => 'Chave (moto)',
+                'bateria_moto' => 'Bateria (moto)',
+            ];
+
+            $registro->load([
+                'marca:id,nome',
+                'itens:id,nome',
+                'imagens:id,registro_id,posicao,path',
+            ]);
+
+            return response()->json([
+                'id'               => $registro->id,
+                'placa'            => $registro->placa,
+                'tipo'             => $registro->tipo,
+                'no_patio'         => (bool) $registro->no_patio,
+                'marca'            => $registro->marca?->nome,
+                'modelo'           => $registro->modelo,
+                'observacao'       => $registro->observacao,
+                'reboque_condutor' => $registro->reboque_condutor,
+                'reboque_placa'    => $registro->reboque_placa,
+                'assinatura'       => $registro->assinatura_path ? asset('storage/' . $registro->assinatura_path) : null,
+                'created_at'       => optional($registro->created_at)->toIso8601String(),
+                'updated_at'       => optional($registro->updated_at)->toIso8601String(),
+                'itens'            => $registro->itens->pluck('nome')->values(),
+                'slides'           => $registro->imagens->map(fn($img) => [
+                    'url'     => asset('storage/' . $img->path),
+                    'posicao' => $img->posicao,
+                    'label'   => $rotulos[$img->posicao] ?? $img->posicao,
+                ])->values(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('registros.show', ['id' => $registro->id, 'err' => $e->getMessage()]);
+            return response()->json(['message' => 'Falha ao carregar o registro.'], 500);
+        }
+    }
+
+
+    public function create()
+    {
         return view('registros.create', [
             'marcas' => Marcas::orderBy('nome')->get(),
             'itens' => Itens::orderBy('nome')->get(),
@@ -54,7 +122,7 @@ class RegistroController extends Controller
     //         // $assinaturaPath = $request->file('assinatura')->store("assinaturas/{$registro->id}", 'public');
     //         $finalPath = "assinaturas/{$registro->id}/" . basename($tmpPath);
     //         Storage::disk('public')->move($tmpPath, $finalPath);
-    
+
     //         $registro -> update(['assinatura_path' => $finalPath]);
 
     //         //Itens N:N
@@ -78,7 +146,7 @@ class RegistroController extends Controller
     //     });
     // }
 
-public function store(RegistroStoreRequest $request)
+    public function store(RegistroStoreRequest $request)
     {
         return DB::transaction(function () use ($request) {
 
@@ -114,7 +182,7 @@ public function store(RegistroStoreRequest $request)
             $stamp  = now()->format('Ymd_His');               // "carimbo" p/ nome único
             $assDir  = "assinaturas/{$registro->id}";
             // $assName = "checklist_ass_{$stamp}.{$assExt}";
-            $assName= "checklist_ass_{$stamp}.{$ext}";        // nome final
+            $assName = "checklist_ass_{$stamp}.{$ext}";        // nome final
             $target  = "{$assDir}/{$assName}";
 
             Storage::disk('public')->makeDirectory($assDir);
@@ -183,5 +251,5 @@ public function store(RegistroStoreRequest $request)
                 ->route('registros.index')
                 ->with('success', 'Registro criado com sucesso!');
         });
-    } 
+    }
 }
