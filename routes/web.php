@@ -10,6 +10,8 @@ Route::get('/', function () {
 
 Route::resource('registros', RegistroController::class);
 Route::get('/registros/{registro}', [RegistroController::class, 'show'])->name('registros.show');
+Route::put('/registros/{registro}', [RegistroController::class, 'update'])->name('registros.update');
+
 
 
 Route::get('/dashboard', function () {

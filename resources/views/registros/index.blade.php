@@ -25,6 +25,7 @@
             </div>
 
             @include('registros.partials.detalhes-modal') {{-- Partial do MODAL de detalhes (um componente maior/alpine) --}}
+            @include('registros.partials.editar-modal')
 
             {{-- Botão "Carregar mais": aparece se houver "nextCursor" (cursor pagination) --}}
             <div class="mt-6 flex justify-center" x-show="nextCursor">
@@ -37,44 +38,44 @@
             </div>
 
             @push('scripts')
-            <script>
-                document.addEventListener('alpine:init', () => {
-                    Alpine.data('registrosPage', (baseUrl, initialCursor) => ({
-                        nextCursor: initialCursor,
-                        loading: false,
-                        flash: null,
-    
-                        async loadMore() {
-                            if (!this.nextCursor || this.loading) return;
-                            this.loading = true;
-                            try {
-                                // Busca a próxima "página" usando cursor (server-side deve detectar X-Requested-With)
-                                const url = `${baseUrl}?cursor=${encodeURIComponent(this.nextCursor)}`;
-                                const res = await fetch(url, {
-                                    headers: {
-                                        'X-Requested-With': 'XMLHttpRequest'
-                                    }
-                                });
-                                // Recebe HTML parcial e “mergeia” os novos cards no #cardsGrid (progressive enhancement)
-                                const html = await res.text();
-                                const doc = new DOMParser().parseFromString(html, 'text/html');
-                                // Anexa cada card retornado
-                                doc.querySelectorAll('#cardsGrid > *')
-                                    .forEach(el => document.querySelector('#cardsGrid').appendChild(el));
-                                // Atualiza o próximo cursor lendo o data-attribute renderizado pelo Blade do server
-                                this.nextCursor = doc.querySelector('[data-next-cursor]')?.getAttribute(
-                                    'data-next-cursor') || null;
-                            } finally {
-                                this.loading = false;
-                            }
-                        },
-                    }));
-                });
-            </script>
-        @endpush
+                <script>
+                    document.addEventListener('alpine:init', () => {
+                        Alpine.data('registrosPage', (baseUrl, initialCursor) => ({
+                            nextCursor: initialCursor,
+                            loading: false,
+                            flash: null,
 
-        {{-- Expõe no HTML o próximo cursor (quando existir). O JS lê isso ao concatenar novas páginas. --}}
-        @if ($registros->nextCursor())
-            <div data-next-cursor="{{ $registros->nextCursor()->encode() }}"></div>
-        @endif
+                            async loadMore() {
+                                if (!this.nextCursor || this.loading) return;
+                                this.loading = true;
+                                try {
+                                    // Busca a próxima "página" usando cursor (server-side deve detectar X-Requested-With)
+                                    const url = `${baseUrl}?cursor=${encodeURIComponent(this.nextCursor)}`;
+                                    const res = await fetch(url, {
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        }
+                                    });
+                                    // Recebe HTML parcial e “mergeia” os novos cards no #cardsGrid (progressive enhancement)
+                                    const html = await res.text();
+                                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                                    // Anexa cada card retornado
+                                    doc.querySelectorAll('#cardsGrid > *')
+                                        .forEach(el => document.querySelector('#cardsGrid').appendChild(el));
+                                    // Atualiza o próximo cursor lendo o data-attribute renderizado pelo Blade do server
+                                    this.nextCursor = doc.querySelector('[data-next-cursor]')?.getAttribute(
+                                        'data-next-cursor') || null;
+                                } finally {
+                                    this.loading = false;
+                                }
+                            },
+                        }));
+                    });
+                </script>
+            @endpush
+
+            {{-- Expõe no HTML o próximo cursor (quando existir). O JS lê isso ao concatenar novas páginas. --}}
+            @if ($registros->nextCursor())
+                <div data-next-cursor="{{ $registros->nextCursor()->encode() }}"></div>
+            @endif
 </x-app-layout>

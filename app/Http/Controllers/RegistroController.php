@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegistroStoreRequest; // FormRequest com validação centralizada (melhor prática)
+use App\Http\Requests\RegistroUpdateRequest;
 use App\Models\Imagem;
 use App\Models\Itens;
 use App\Models\Marcas;
 use App\Models\Registros;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB; // Para transações atômicas (begin/commit/rollback)
 use Illuminate\Support\Facades\Log; // Para registrar sucessos/erros em logs
 use Illuminate\Support\Facades\Storage; // Para salvar arquivos no disco configurado
@@ -161,7 +163,7 @@ class RegistroController extends Controller
             // Decodifica o Base64 em binário
             $bin    = base64_decode($payload);
             // carimbo de data/hora para nomes únicos e rastreáveis
-            $stamp  = now()->format('Ymd_His');    
+            $stamp  = now()->format('Ymd_His');
             // diretório por registro → organização e possibilidade de limpeza pontual || "carimbo" p/ nome único
             $assDir  = "assinaturas/{$registro->id}";
             // nome de arquivo padronizado (facilita localizar no storage)
@@ -250,6 +252,174 @@ class RegistroController extends Controller
             return redirect()
                 ->route('registros.index')
                 ->with('success', 'Registro criado com sucesso!');
+        });
+    }
+
+    public function edit(Registros $registro)
+    {
+        // Carrega relações necessárias para o form de edição
+        $registro->load(['marca', 'imagens', 'itens']);
+
+        $payload = [
+            'registro' => $registro,
+            'marcas'   => Marcas::orderBy('nome')->get(),
+            'itens'    => Itens::orderBy('nome')->get(),
+        ];
+
+        // Se veio via fetch() com o header X-Requested-With, devolve só o HTML do form
+        if (request()->ajax()) {
+            return view('registros.partials.edit-form', $payload);
+        }
+
+        // Fallback (acessou /registros/{id}/edit direto no navegador)
+        return view('registros.edit', $payload);
+    }
+
+    public function update(RegistroUpdateRequest $request, Registros $registro)
+    {
+        // Os logs são ótimos para depuração, mantenha-os!
+        Log::info('UPDATE raw', $request->all());
+        Log::info('UPDATE validated', $request->validated());
+
+        $data = $request->validated();
+
+        return DB::transaction(function () use ($request, $registro, $data) {
+
+            // --- CORREÇÃO 1: ATUALIZAR DADOS PRINCIPAIS ---
+            // Lista de colunas que pertencem diretamente à tabela 'registros'.
+            $colunasRegistro = [
+                'tipo',
+                'placa',
+                'marca_id',
+                'modelo',
+                'no_patio',
+                'observacao',
+                'reboque_condutor',
+                'reboque_placa'
+            ];
+
+            $registroData = Arr::only($data, $colunasRegistro);
+
+            // 2) Assinatura (se uma nova foi enviada)
+            if (!empty($data['assinatura_b64'])) {
+                // Decodifica a nova assinatura
+                [$meta, $b64] = explode(',', $data['assinatura_b64'], 2);
+                $ext = str_contains($meta, 'image/png') ? 'png' : (str_contains($meta, 'image/webp') ? 'webp' : 'jpg');
+                $bin = base64_decode($b64);
+
+                // Define um caminho único
+                $dir = "assinaturas/{$registro->id}";
+                $stamp = now()->format('Ymd_His');
+                $path = "{$dir}/checklist_ass_{$stamp}.{$ext}";
+
+                // Apaga a assinatura antiga do disco, se existir
+                if ($registro->assinatura_path) {
+                    Storage::disk('public')->delete($registro->assinatura_path);
+                }
+                // Salva a nova
+                Storage::disk('public')->put($path, $bin);
+
+                // Adiciona o novo caminho aos dados a serem atualizados
+                $registroData['assinatura_path'] = $path;
+            }
+
+            // Atualiza todos os campos do registro de uma só vez.
+            // O método update() preenche e salva.
+            $registro->update($registroData);
+
+            // 3) Sincroniza os itens (relação N:N)
+            // Sua lógica aqui já estava correta.
+            $registro->itens()->sync($data['itens'] ?? []);
+
+            // 4) Remoção de imagens existentes
+            // Sua lógica aqui já estava correta.
+            if (!empty($data['remove_imagens'])) {
+                $imagens = Imagem::whereIn('id', $data['remove_imagens'])
+                    ->where('registro_id', $registro->id)->get();
+
+                foreach ($imagens as $img) {
+                    Storage::disk('public')->delete($img->path);
+                    $img->delete();
+                }
+            }
+
+            // --- CORREÇÃO 2: LÓGICA PARA ATUALIZAR/ADICIONAR IMAGENS POSICIONAIS ---
+            // Reutilizamos a mesma lista de posições do método store.
+            $todasPosicoes = [
+                'frente',
+                'lado_direito',
+                'lado_esquerdo',
+                'traseira',
+                'capo_aberto',
+                'numero_do_motor',
+                'painel_lado_direito',
+                'painel_lado_esquerdo',
+                'bateria_carro',
+                'chave_carro',
+                'estepe_do_veiculo',
+                'motor_lado_direito',
+                'motor_lado_esquerdo',
+                'painel_moto',
+                'chave_moto',
+                'bateria_moto',
+            ];
+
+            $stamp = now()->format('Ymd_His');
+
+            foreach ($todasPosicoes as $pos) {
+                // Se o input dessa posição não veio como um novo arquivo, pula para a próxima
+                if (!$request->hasFile($pos)) {
+                    continue;
+                }
+
+                $file = $request->file($pos);
+                $ext  = $file->extension();
+                $dir  = "registros/{$registro->id}/{$pos}";
+
+                // Padroniza o nome do arquivo, como no store
+                $fname = "checklist_{$data['tipo']}_{$stamp}.{$ext}";
+                $path  = $file->storeAs($dir, $fname, 'public');
+
+                // Procura por uma imagem existente nesta posição para este registro
+                $imagemExistente = Imagem::where('registro_id', $registro->id)
+                    ->where('posicao', $pos)
+                    ->first();
+
+                // Se encontrou, apaga o arquivo antigo do disco
+                if ($imagemExistente) {
+                    Storage::disk('public')->delete($imagemExistente->path);
+                }
+
+                // Usa updateOrCreate para garantir que só exista uma imagem por posição.
+                // Ele vai ATUALIZAR a existente ou CRIAR uma nova.
+                Imagem::updateOrCreate(
+                    ['registro_id' => $registro->id, 'posicao' => $pos],
+                    [
+                        'path'          => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime'          => $file->getClientMimeType(),
+                        'size'          => $file->getSize(),
+                    ]
+                );
+            }
+
+            // Opcional: Lógica para imagens "extras" (se houver um campo 'imagens[]')
+            if ($request->hasFile('imagens')) {
+                foreach ($request->file('imagens') as $file) {
+                    $path = $file->store('registros', 'public');
+
+                    Imagem::create([
+                        'registro_id' => $registro->id,
+                        'path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime' => $file->getClientMimeType(),
+                        'size' => $file->getSize(),
+                    ]);
+                }
+            }
+
+            // Redireciona com sucesso
+            return redirect()->route('registros.index')->with('success', 'Registro atualizado com sucesso!');
         });
     }
 }

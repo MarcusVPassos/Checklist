@@ -26,10 +26,12 @@
         $capaUrl = $capa ? asset('storage/' . $capa->path) : 'https://via.placeholder.com/640x360?text=Sem+Foto'; // asset('storage/...') cria URL pública para arquivos no disco "public"
     @endphp
 
-    <div class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div
+        class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
         <button type="button" class="block w-full text-left" {{-- Botão que dispara um CustomEvent global para abrir o modal (Alpine escuta) --}}
             @click.prevent="window.dispatchEvent(new CustomEvent('abrir-registro', { detail: { id: {{ $r->id }} } }))">
-            <img src="{{ $capaUrl }}" class="h-48 w-full object-cover" alt="Capa" loading="lazy"> {{-- Imagem de capa; loading="lazy" ajuda na performance --}}
+            <img src="{{ $capaUrl }}" class="h-48 w-full object-cover" alt="Capa" loading="lazy">
+            {{-- Imagem de capa; loading="lazy" ajuda na performance --}}
             <div class="p-4">
                 <div class="mb-2 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $r->placa }}</h3>
@@ -49,6 +51,12 @@
                     <span class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm">Ver detalhes</span>
                 </div>
             </div>
+        </button>
+        <button type="button"
+            class="mt-2 inline-flex items-center rounded-md bg-amber-600 px-3 py-1.5 text-white
+         hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600"
+            @click.prevent="window.dispatchEvent(new CustomEvent('editar-registro', { detail: { id: {{ $r->id }} } }))">
+            Editar
         </button>
     </div>
 @endforeach
