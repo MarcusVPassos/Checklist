@@ -8,6 +8,7 @@ use App\Models\Imagem;
 use App\Models\Itens;
 use App\Models\Marcas;
 use App\Models\Registros;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB; // Para transações atômicas (begin/commit/rollback)
@@ -26,7 +27,7 @@ class RegistroController extends Controller
          * - cursorPaginate(6): paginação por cursor → ideal para "Carregar mais" sem custo crescente de OFFSET.
          */
         $registros = Registros::query()
-            ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path'])
+            ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path', 'created_at'])
             ->with([
                 'marca:id,nome', // join leve apenas com os campos usados
                 'imagens:id,registro_id,posicao,path', // apenas o necessário para mostrar a capa

@@ -30,6 +30,9 @@
         class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
         <button type="button" class="block w-full text-left" {{-- Botão que dispara um CustomEvent global para abrir o modal (Alpine escuta) --}}
             @click.prevent="window.dispatchEvent(new CustomEvent('abrir-registro', { detail: { id: {{ $r->id }} } }))">
+            <span class="ml-1 text-md font-medium text-gray-800 dark:text-gray-200">
+                Criado em {{ $r->created_at?->format('d/m/Y H:i') ?? '—' }}        {{-- por {{$r->user_id}} --}}
+            </span>
             <img src="{{ $capaUrl }}" class="h-48 w-full object-cover" alt="Capa" loading="lazy">
             {{-- Imagem de capa; loading="lazy" ajuda na performance --}}
             <div class="p-4">
@@ -47,26 +50,23 @@
                 </div>
                 {{-- Operador null-safe em $r->marca?->nome evita erro se a relação não existir --}}
                 <p class="text-sm text-gray-600 dark:text-gray-300">{{ $r->marca?->nome }} — {{ $r->modelo }}</p>
-                <div class="mt-4">
-                    <span class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm">Ver detalhes</span>
-                </div>
             </div>
         </button>
-        <button type="button"
-            class="mt-2 inline-flex items-center rounded-md bg-amber-600 px-3 py-1.5 text-white
-         hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600"
-            @click.prevent="window.dispatchEvent(new CustomEvent('editar-registro', { detail: { id: {{ $r->id }} } }))">
-            Editar
-        </button>
+        <div class="flex gap-2 justify-end mb-2 mr-2">
+            <x-primary-button type="button"
+                @click.prevent="window.dispatchEvent(new CustomEvent('editar-registro', { detail: { id: {{ $r->id }} } }))">
+                Editar
+            </x-primary-button>
 
-        {{-- EXCLUIR (softDelete) --}}
-        <form method="POST" action="{{ route ('registros.destroy', $r->id) }}"
-            onsubmit="return confirm('Enviar este registro para a lixeira?')">
-            @csrf
-            @method('DELETE')
-            <x-danger-button>
-                Excluir
-            </x-danger-button>
-        </form>
+            {{-- EXCLUIR (softDelete) --}}
+            <form method="POST" action="{{ route('registros.destroy', $r->id) }}"
+                onsubmit="return confirm('Enviar este registro para a lixeira?')">
+                @csrf
+                @method('DELETE')
+                <x-danger-button>
+                    Excluir
+                </x-danger-button>
+            </form>
+        </div>
     </div>
 @endforeach
