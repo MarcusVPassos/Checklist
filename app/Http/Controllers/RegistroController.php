@@ -17,8 +17,49 @@ use Illuminate\Support\Facades\Storage; // Para salvar arquivos no disco configu
 
 class RegistroController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        // catálogos para selects "inteligentes"
+        $anos = Registros::selectRaw('YEAR(created_at) as ano, COUNT(*) as total')
+            ->groupBy('ano')
+            ->orderByDesc('ano')
+            ->get(); // ex: [ {ano: 2025, total 12}, {ano 2024, total: 5} ]
+
+        $mesesBr = [
+            1 => 'Janeiro',
+            2 => 'Fevereiro',
+            3 => 'Março',
+            4 => 'Abril',
+            5 => 'Maio',
+            6 => 'Junho',
+            7 => 'Julho',
+            8 => 'Agosto',
+            9 => 'Setembro',
+            10 => 'Outubro',
+            11 => 'Novembro',
+            12 => 'Dezembro'
+        ];
+
+        // meses por ano (só os existentes)
+        $mesesPorAnoRows = Registros::selectRaw('YEAR(created_at) as ano, MONTH(created_at) as mes, COUNT(*) as total')
+            ->groupBy('ano', 'mes')
+            ->orderBy('ano', 'desc')->orderBy('mes', 'asc')
+            ->get();
+
+        // reagrupa em estrutura { [ano]: [ {mes, nome, total}, ... ] }
+        $mesesPorAno = [];
+        foreach ($mesesPorAnoRows as $r) {
+            $mesesPorAno[$r->ano][] = [
+                'mes'   => (int) $r->mes,
+                'nome'  => $mesesBr[(int)$r->mes] ?? $r->mes,
+                'total' => (int) $r->total,
+            ];
+        }
+
+        // listas para os <select> do formulário
+        $marcas   = Marcas::orderBy('nome')->get(['id', 'nome']);
+        $itens    = Itens::orderBy('nome')->get(['id', 'nome']);
+        $usuarios = User::orderBy('name')->get(['id', 'name']);
         /*
          * Objetivo: carregar a listagem de forma leve e rápida.
          * - select(): traz só as colunas que a grade precisa.
@@ -32,11 +73,30 @@ class RegistroController extends Controller
                 'marca:id,nome', // join leve apenas com os campos usados
                 'imagens:id,registro_id,posicao,path', // apenas o necessário para mostrar a capa
             ])
+            // Filtros
+            ->placa($request->query('placa'))
+            ->marca($request->query('marca_id'))
+            ->item($request->query('item_id'))
+            ->modelo($request->query('modelo'))
+            ->periodo($request->query('from'), $request->query('to'))
+            ->mesAno($request->query('mes'), $request->query('ano'))
+            ->tipo($request->query('tipo'))
+            ->statusPatio($request->query('status_patio')) // no_patio | saiu
+            // Fim filtros
             ->latest('id')
-            ->cursorPaginate(6); // melhor para "load more"
+            ->cursorPaginate(6) // melhor para "load more"
+            ->withQueryString();
 
         // Retorna para a view Blade com a coleção paginada por cursor     
-        return view('registros.index', compact('registros'));
+        return view('registros.index', compact(
+            'registros',
+            'marcas',
+            'itens',
+            'usuarios',
+            'anos',
+            'mesesPorAno',
+            'mesesBr'
+        ));
     }
 
     /*
@@ -432,10 +492,11 @@ class RegistroController extends Controller
     }
 
     // retorna a lista com todos os registros que estão com status deletado, com paginate de 6 igual a lista normal
-    public function trashed(){
+    public function trashed()
+    {
         $registros = Registros::onlyTrashed()
-            ->select(['id','placa','tipo','no_patio','marca_id','modelo','assinatura_path','deleted_at'])
-            ->with(['marca:id,nome','imagens:id,registro_id,posicao,path'])
+            ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path', 'deleted_at'])
+            ->with(['marca:id,nome', 'imagens:id,registro_id,posicao,path'])
             ->latest('id')
             ->cursorPaginate(6);
 
@@ -443,14 +504,16 @@ class RegistroController extends Controller
     }
 
     // Restaura o item com status deletado para o status normal, voltando a lista de registros e podendo ser filtrado etc
-    public function restore($id){
+    public function restore($id)
+    {
         $registro = Registros::withTrashed()->findOrFail($id); // inclui deletador
         $registro->restore();
         return redirect()->route('registros.trashed')->with('sucess', 'Registro restaurado com sucesso');
     }
 
     // Apagou assim é vala papai, nunca mais será visto. F
-    public function forceDelete($id){
+    public function forceDelete($id)
+    {
         $registro = Registros::withTrashed()->findOrFail($id);
         $registro->forceDelete(); // Hard Delete
         return redirect()->route('registros.trashed')->with('sucess', 'Registro deletado permanentemente');

@@ -20,10 +20,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *   exigir assinatura e gerar documento (PDF) usando Blade como template.
  */
 
-class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDocument 
+class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDocument
 {
     // Para o delete ser mudança de status em vez de delete abrupto  yes baby
-    use SoftDeletes;    
+    use SoftDeletes;
     /**
      * Trait do pacote Creagia que marca este model como "requer assinatura".
      * Ele habilita fluxos de assinatura/documento conforme a lib.
@@ -40,9 +40,17 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      * Evita vulnerabilidades quando recebemos arrays do request.
      * Docs: Eloquent Mass Assignment.
      */
-    protected $fillable = 
+    protected $fillable =
     [
-        'tipo', 'placa', 'marca_id', 'no_patio', 'modelo', 'observacao', 'reboque_condutor', 'reboque_placa', 'assinatura_path',
+        'tipo',
+        'placa',
+        'marca_id',
+        'no_patio',
+        'modelo',
+        'observacao',
+        'reboque_condutor',
+        'reboque_placa',
+        'assinatura_path',
     ];
 
     /*
@@ -50,7 +58,7 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      * Aqui garantimos que no_patio sempre seja boolean no PHP/JSON.
      * Docs: Attribute Casting.
      */
-    protected $casts = 
+    protected $casts =
     [
         'no_patio' => 'boolean',
     ];
@@ -86,7 +94,8 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      * Importante: definimos explicitamente os nomes das FKs da pivô
      * porque a tabela/colunas não seguem o padrão "registro_id" / "item_id".
      */
-    public function itens(){
+    public function itens()
+    {
         return $this->belongsToMany(
             Itens::class,        // Model relacionado
             'registros_itens',   // Tabela pivô
@@ -100,7 +109,8 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      * - A FK local é "marca_id" (coluna existente em 'registros').
      * - Definimos explicitamente para clareza, embora Eloquent inferisse pelo nome.
      */
-    public function marca(){
+    public function marca()
+    {
         return $this->belongsTo(Marcas::class, 'marca_id');  //O Eloquent deriva o nome da FK do nome do método + _id
     }
 
@@ -109,7 +119,61 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      * - A FK nas imagens é "registro_id".
      * - Com isso, $registro->imagens retorna a coleção (Illuminate\Database\Eloquent\Collection).
      */
-    public function imagens(){
+    public function imagens()
+    {
         return $this->hasMany(Imagem::class, 'registro_id');
+    }
+
+    // SCOPES
+    // em Local Scopes do Eloquent, qualquer método do model que começa com scopeXxx vira um filtro encadeável como ->xxx() na query
+    public function scopePlaca($q, ?string $placa) // ?string pode ser string ou null, sem medo se vier null o scope não aplica filtro.
+    {  // $q é o query builder do Eloquent
+        // toda vez que chama ->where(...), é adicionada uma condiação à query e o builder é retornado para continuar encadeado
+        return $placa ? $q->where('placa', 'like', "%{$placa}%") : $q; // se tem valor filtra se não devolve a query intacta
+        // like é o opserador SQL para busca aproximada. % é cúringa
+    }
+
+    public function scopeMarca($q, $marcaId)
+    {
+        return $marcaId ? $q->where('maraca_id', $marcaId) : $q;
+    }
+
+    public function scopeItem($q, $itemId)
+    {
+        return $itemId
+            ? $q->whereHas('itens', fn($rel) => $rel->where('itens.id', $itemId))
+            : $q;
+    }
+
+    public function scopeModelo($q, ?string $modelo)
+    {
+        return $modelo ? $q->where('modelo', 'like', "%{$modelo}%") : $q;
+    }
+
+    public function scopePeriodo($q, ?string $from, ?string $to)
+    {
+        if ($from) $q->whereDate('created_at', '>=', $from);
+        if ($to) $q->whereDate('created_at', '<=', $to);
+        return $q;
+    }
+
+    public function scopeMesAno($q, $mes, $ano)
+    {
+        if ($mes) $q->whereMonth('created_at', $mes);
+        if ($ano) $q->whereYear('created_at', $ano);
+        return $q;
+    }
+
+    public function scopeTipo($q, ?string $tipo)
+    {
+        return $tipo ? $q->where('tipo', $tipo) : $q;
+    }
+
+    public function scopeStatusPatio($q, ?string $status)
+    {
+        //status: "no_patio" | "saiu"
+        if ($status === 'no_patio') return $q->where('no_patio', true);
+        if ($status === 'saiu') return $q->where('no_patio', false);
+        return $q;
     }
 }
