@@ -422,4 +422,36 @@ class RegistroController extends Controller
             return redirect()->route('registros.index')->with('success', 'Registro atualizado com sucesso!');
         });
     }
+
+    // Soft delete função para puxar na rota e fazer o delete bem fofinho que só muda status em vez de deletar total
+    public function destroy(Registros $registro)
+    {
+        $registro->delete();
+        return back()->with('sucess', 'Registro enviado para a lixeira.');
+    }
+
+    // retorna a lista com todos os registros que estão com status deletado, com paginate de 6 igual a lista normal
+    public function trashed(){
+        $registros = Registros::onlyTrashed()
+            ->select(['id','placa','tipo','no_patio','marca_id','modelo','assinatura_path','deleted_at'])
+            ->with(['marca:id,nome','imagens:id,registro_id,posicao,path'])
+            ->latest('id')
+            ->cursorPaginate(6);
+
+        return view('registros.trashed', compact('registros'));
+    }
+
+    // Restaura o item com status deletado para o status normal, voltando a lista de registros e podendo ser filtrado etc
+    public function restore($id){
+        $registro = Registros::withTrashed()->findOrFail($id); // inclui deletador
+        $registro->restore();
+        return redirect()->route('registros.trashed')->with('sucess', 'Registro restaurado com sucesso');
+    }
+
+    // Apagou assim é vala papai, nunca mais será visto. F
+    public function forceDelete($id){
+        $registro = Registros::withTrashed()->findOrFail($id);
+        $registro->forceDelete(); // Hard Delete
+        return redirect()->route('registros.trashed')->with('sucess', 'Registro deletado permanentemente');
+    }
 }

@@ -21,7 +21,8 @@ return new class extends Migration
             $table->text('reboque_condutor');                       // Nome do condutor do reboque                
             $table->string('reboque_placa');                        // Placa do reboque
             $table->string('assinatura_path');                      // Caminho do arquivo da assinatura;  [path]              
-            $table->boolean('no_patio')->default(true);             // Tipo boolean para mudança de status ativo = no_patio e false = saiu                        
+            $table->boolean('no_patio')->default(true);             // Tipo boolean para mudança de status ativo = no_patio e false = saiu      
+            $table->softDeletes();                                  // Delete que só muda o status para deletado                  
             $table->timestamps();                                   // Quando criou e quando foi editado    
         });
     }
@@ -31,6 +32,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('registros');
+        Schema::dropIfExists('registros', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

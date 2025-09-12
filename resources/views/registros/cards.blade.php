@@ -58,5 +58,15 @@
             @click.prevent="window.dispatchEvent(new CustomEvent('editar-registro', { detail: { id: {{ $r->id }} } }))">
             Editar
         </button>
+
+        {{-- EXCLUIR (softDelete) --}}
+        <form method="POST" action="{{ route ('registros.destroy', $r->id) }}"
+            onsubmit="return confirm('Enviar este registro para a lixeira?')">
+            @csrf
+            @method('DELETE')
+            <x-danger-button>
+                Excluir
+            </x-danger-button>
+        </form>
     </div>
 @endforeach

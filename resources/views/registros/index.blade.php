@@ -1,15 +1,24 @@
 {{-- resources/views/registros/index.blade.php --}}
 <x-app-layout>
+    <p> para não esquecer, no edit ao trocar placa que já pega maiusculo natural com uppercase no edit ele ta vindo em
+        minusculo. Ajustar</p>
+    <p> Ajustar também visualização de dados completa do modal que não está pegando os principais.</p>
     <x-slot name="header"> {{-- SLOT nomeado "Header" do componente <x-app-layout> --}}
         <div class="flex justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Registros</h2>
-            <a href="{{ route('registros.create') }}" {{-- Helper de rota. Gera URL por nome da rota --}}
-                class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                Novo Registro
-            </a>
+            <div>
+                <a href="{{ route('registros.create') }}" {{-- Helper de rota. Gera URL por nome da rota --}}
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                    Novo Registro
+                </a>
+                <a href="{{ route('registros.trashed') }}"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                    Lixeira
+                </a>
+            </div>
         </div>
     </x-slot>
-    {{-- Alpine component "registrosPage": recebe a URL base e o cursor inicial --}} // {{-- @js serializa o objeto PHP em JSON seguro para embed no JS --}}
+    {{-- Alpine component "registrosPage": recebe a URL base e o cursor inicial --}} {{-- @js serializa o objeto PHP em JSON seguro para embed no JS --}}
     <div class="py-8" x-data="registrosPage('{{ route('registros.index') }}', @js($registros->nextCursor()?->encode() ?? null))">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <template x-if="flash"> {{-- Exibe flash (mensagem efêmera) quando existir (Alpine) --}}

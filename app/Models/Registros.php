@@ -9,6 +9,7 @@ use Creagia\LaravelSignPad\SignatureDocumentTemplate;
 use Creagia\LaravelSignPad\SignaturePosition;
 use Creagia\LaravelSignPad\Templates\BladeDocumentTemplate;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * - $table: mapeia explicitamente a tabela "registros".
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDocument 
 {
+    // Para o delete ser mudança de status em vez de delete abrupto  yes baby
+    use SoftDeletes;    
     /**
      * Trait do pacote Creagia que marca este model como "requer assinatura".
      * Ele habilita fluxos de assinatura/documento conforme a lib.
