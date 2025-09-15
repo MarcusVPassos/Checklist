@@ -94,6 +94,7 @@ class RegistroStoreRequest extends FormRequest
                 // garante que venha algo como data:image/png;base64,AAAA...
                 'regex:/^data:image\\/(png|jpe?g|webp);base64,/i',
             ],
+            'user_id' => 'prohibited', // cliente não manda o user_id
         ];
 
         // posições de CARRO (obrigatórias quando tipo = carro)

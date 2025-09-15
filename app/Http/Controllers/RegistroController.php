@@ -11,6 +11,7 @@ use App\Models\Registros;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Para transações atômicas (begin/commit/rollback)
 use Illuminate\Support\Facades\Log; // Para registrar sucessos/erros em logs
 use Illuminate\Support\Facades\Storage; // Para salvar arquivos no disco configurado
@@ -68,12 +69,13 @@ class RegistroController extends Controller
          * - cursorPaginate(6): paginação por cursor → ideal para "Carregar mais" sem custo crescente de OFFSET.
          */
         $registros = Registros::query()
-            ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path', 'created_at'])
+            ->select(['id', 'placa', 'tipo', 'no_patio', 'marca_id', 'modelo', 'assinatura_path', 'created_at', 'user_id'])
             ->with([
                 'marca:id,nome', // join leve apenas com os campos usados
                 'imagens:id,registro_id,posicao,path', // apenas o necessário para mostrar a capa
             ])
             // Filtros
+            ->user($request->query('user_id'))
             ->placa($request->query('placa'))
             ->marca($request->query('marca_id'))
             ->item($request->query('item_id'))
@@ -130,6 +132,7 @@ class RegistroController extends Controller
 
             // Carrega relações necessárias para o modal
             $registro->load([
+                'user:id,name',
                 'marca:id,nome',
                 'itens:id,nome', // relação N:N (pivot) – apenas os nomes usados na UI
                 'imagens:id,registro_id,posicao,path', // imagens para galeria/slides do modal
@@ -138,6 +141,7 @@ class RegistroController extends Controller
             // Monta resposta JSON com campos prontos para o front
             return response()->json([
                 'id'               => $registro->id,
+                'user'             => $registro->user?->name,  
                 'placa'            => $registro->placa,
                 'tipo'             => $registro->tipo,
                 'no_patio'         => (bool) $registro->no_patio, // coerção para boolean
@@ -190,12 +194,16 @@ class RegistroController extends Controller
             // Dados já validados pela FormRequest (sanitizados e com regras aplicadas)
             $data = $request->validated();
 
+            /// Garante que o user_id venha do auth e não do cliente
+            $data['user_id'] = Auth::id(); // ou $request->user()-id
+
             /*
              * 1) Cria o registro (sem imagens e com assinatura_path vazio por enquanto).
              * - Precisamos do ID do registro para montar os diretórios/nomes dos arquivos.
              * - assinatura_path é atualizado após gravarmos o arquivo Base64.
              */
             $registro = Registros::create([
+                'user_id'           => $data['user_id'],
                 'tipo'              => $data['tipo'],
                 'placa'             => $data['placa'],
                 'marca_id'          => $data['marca_id'],

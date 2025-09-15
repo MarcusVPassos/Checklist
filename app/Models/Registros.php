@@ -45,6 +45,7 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      */
     protected $fillable =
     [
+        'user_id',
         'tipo',
         'placa',
         'marca_id',
@@ -117,6 +118,11 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
         return $this->belongsTo(Marcas::class, 'marca_id');  //O Eloquent deriva o nome da FK do nome do método + _id
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id'); // mesma coisa do marca
+    }
+
     /*
      * Relacionamento 1:N — um Registro possui muitas Imagens.
      * - A FK nas imagens é "registro_id".
@@ -134,6 +140,10 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
         // toda vez que chama ->where(...), é adicionada uma condiação à query e o builder é retornado para continuar encadeado
         return $placa ? $q->where('placa', 'like', "%{$placa}%") : $q; // se tem valor filtra se não devolve a query intacta
         // like é o opserador SQL para busca aproximada. % é cúringa
+    }
+
+    public function scopeUser($q, $userId){
+        return $userId ? $q->where('user_id', $userId) : $q;
     }
 
     public function scopeMarca($q, $marcaId)

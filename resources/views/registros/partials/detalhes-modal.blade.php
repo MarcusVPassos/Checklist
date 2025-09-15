@@ -2,8 +2,8 @@
 {{-- name="registro-detalhes" é o identificador que o JS usa pra abrir/fechar --}}
 {{-- :show="false" liga uma prop booleana; maxWidth controla a largura --}}
 <x-modal name="registro-detalhes" :show="false" maxWidth="2xl">
-    <div x-data="registroDetalhesModal()" {{-- cria a instância Alpine deste modal --}} 
-            x-on:abrir-registro.window="open($event.detail.id)"> {{-- ouve o CustomEvent global e chama open(id) --}}
+    <div x-data="registroDetalhesModal()" {{-- cria a instância Alpine deste modal --}} x-on:abrir-registro.window="open($event.detail.id)">
+        {{-- ouve o CustomEvent global e chama open(id) --}}
         {{-- HEADER fixo (sticky) pra manter título/botão durante scroll do body do modal --}}
         <div
             class="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
@@ -14,7 +14,7 @@
                     <span x-text="modal.marca || '—'"></span> —
                     <span x-text="modal.modelo || '—'"></span> •
                     <span x-text="modal.tipo === 'carro' ? 'Carro' : (modal.tipo === 'moto' ? 'Moto' : '—')"></span> •
-                    <span x-text="modal.no_patio ? 'No pátio' : 'Saiu'"></span>
+                    <span x-text="modal.no_patio ? 'No pátio' : 'Saiu'"></span> •
                 </p>
             </div>
             {{-- Fecha o modal do Jetstream via evento padrão open-modal/close-modal --}}
@@ -75,6 +75,11 @@
 
                     {{-- Detalhes em grid com fallback "—" quando ausente --}}
                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">User</div>
+                            <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
+                                x-text="modal.user || '—'"></div>
+                        </div>
                         <div>
                             <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Placa</div>
                             <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
@@ -147,7 +152,7 @@
 {{-- @push('scripts') para injetar JS desta partial no @stack('scripts') do layout --}}
 @push('scripts')
     <script>
-    // Factory GLOBAL que o Alpine usa para criar/gerenciar o estado do modal
+        // Factory GLOBAL que o Alpine usa para criar/gerenciar o estado do modal
         window.registroDetalhesModal = function() {
             return {
                 // estado
@@ -244,7 +249,7 @@
                         });
                         if (!res.ok) throw new Error(`Erro ${res.status}`);
                         const data = await res.json();
-                        
+
                         // Atualiza estado e centraliza o carrossel
                         this.modal = {
                             ...data,

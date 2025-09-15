@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -45,5 +46,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    /*
+     * 1:N — Um Usuário tem muitos Registros.
+     * - FK esperada na tabela "registros": "user_id".
+     * - Assim, $users->registros retorna uma Collection de Registros.
+     */
+
+    public function registros()
+    {
+        return $this->HasMany(Registros::class);
     }
 }
