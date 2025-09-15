@@ -84,7 +84,7 @@ class RegistroController extends Controller
             ->statusPatio($request->query('status_patio')) // no_patio | saiu
             // Fim filtros
             ->latest('id')
-            ->cursorPaginate(6) // melhor para "load more"
+            ->cursorPaginate(10) // melhor para "load more"
             ->withQueryString();
 
         // Retorna para a view Blade com a coleção paginada por cursor     

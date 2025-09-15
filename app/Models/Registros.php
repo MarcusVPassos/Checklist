@@ -8,6 +8,7 @@ use Creagia\LaravelSignPad\Contracts\ShouldGenerateSignatureDocument;
 use Creagia\LaravelSignPad\SignatureDocumentTemplate;
 use Creagia\LaravelSignPad\SignaturePosition;
 use Creagia\LaravelSignPad\Templates\BladeDocumentTemplate;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDocument
 {
+
+    use HasFactory;
     // Para o delete ser mudança de status em vez de delete abrupto  yes baby
     use SoftDeletes;
     /**
@@ -135,7 +138,7 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
 
     public function scopeMarca($q, $marcaId)
     {
-        return $marcaId ? $q->where('maraca_id', $marcaId) : $q;
+        return $marcaId ? $q->where('marca_id', $marcaId) : $q;
     }
 
     public function scopeItem($q, $itemId)
