@@ -13,7 +13,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Primeiro chama o seeder de roles e permissões
+        $this->call(RolePermissionSeeder::class);
+
+        // Cria ou atualiza o usuário admin padrão
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@admin.com'], //condicao
+            [
+                'name' => 'Admin',
+                'password' => bcrypt('admin123'),
+            ]
+        );
+
+        // Garante que ele sempre tenha o role 'admin'
+        $admin->assignRole('admin');
 
         User::factory()->create([
             'name' => 'Test User',

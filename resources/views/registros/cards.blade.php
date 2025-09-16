@@ -70,7 +70,7 @@
                 </x-primary-button>
             @endif
 
-            <!-- MODAL DE CONFIRMAÇÃO -->
+            <!-- MODAL DE CONFIRMAÇÃO de status -->
             <x-modal name="confirmar-status-{{ $r->id }}" :show="false">
                 <form method="POST" action="{{ route('registros.togglePatio', $r->id) }}" class="p-4">
                     @csrf
@@ -91,16 +91,15 @@
                     </div>
                 </form>
             </x-modal>
-
-
-
+            
             {{-- EXCLUIR (softDelete) --}}
-                <x-danger-button type="button"
-                    x-on:click="$dispatch('open-modal', 'confirmar-exclusao-{{ $r->id }}')">
-                    Excluir
-                </x-danger-button>
+            <x-danger-button type="button"
+                x-on:click="$dispatch('open-modal', 'confirmar-exclusao-{{ $r->id }}')">
+                Excluir
+            </x-danger-button>
 
-            <x-modal name="confirmar-exclusao-{{$r->id}}" :show="false">
+            <!-- MODAL DE CONFIRMAÇÃO de exclusão -->
+            <x-modal name="confirmar-exclusao-{{ $r->id }}" :show="false">
                 <form method="POST" action="{{ route('registros.destroy', $r->id) }}" class="p-4">
                     @csrf
                     @method('DELETE')

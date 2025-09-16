@@ -1,3 +1,28 @@
+Blade: esconder botões/áreas por permissão (UI segura) || @can/@cannot/@canany (Laravel) e diretivas do Spatie para roles existem, mas a boa prática é basear o UI em permissões.
+  a) Mostrar “Cadastrar usuário” só pra quem pode criar usuários
+    @can('users.create')
+      <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Cadastrar Usuário</a>
+    @endcan
+
+  b) Botão “Conceder permissões” só pra quem pode atribuir
+  @can('users.assign-roles')
+    <a href="{{ route('admin.users.roles-perms', $user) }}" class="btn">Conceder Permissões</a>
+  @endcan
+
+  c) Exemplos no seu contexto (Registros)
+  @can('registros.delete')
+    <form method="POST" action="{{ route('registros.destroy', $r->id) }}">
+        @csrf @method('DELETE')
+        <x-danger-button>Excluir</x-danger-button>
+    </form>
+  @endcan
+
+Proteger Rotas/Controladores com middleware:
+  Ex.: somente quem tem a permissão pode acessar as rotas de usuários
+  - Route::middleware(['auth','permission:users.view'])->get('/admin/users', ...);
+
+  
+
 # 🚗 Sistema CheckList
 
 ## 📌 Resumo
