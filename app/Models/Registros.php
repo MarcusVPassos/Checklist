@@ -43,7 +43,7 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      * Evita vulnerabilidades quando recebemos arrays do request.
      * Docs: Eloquent Mass Assignment.
      */
-    protected $fillable =
+    protected $fillable = // Autoriza o update e create a receber esse campo.
     [
         'user_id',
         'tipo',
@@ -64,7 +64,7 @@ class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDoc
      */
     protected $casts =
     [
-        'no_patio' => 'boolean',
+        'no_patio' => 'boolean', // transforma 0/1 em false/true. Assim na view pode usar como um boolean real em PHP.
     ];
 
     /*

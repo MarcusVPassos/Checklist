@@ -8,8 +8,8 @@
 
     {{-- Placa --}}
     <div class="{{ $modo === 'desktop' ? 'md:col-span-2' : '' }}">
-        <x-input-label for="placa" value="Placa" class="text-xs" />
-        <x-text-input id="placa" name="placa" type="text"
+        <x-input-label for="placa" value="Placa" class="text-xs"  />
+        <x-text-input id="placa" name="placa" type="text" placeholder="BRA-2E19 || OTM-2022"
             class="mt-1 block w-full text-sm h-10 uppercase"
             value="{{ request('placa') }}" />
     </div>
@@ -17,7 +17,7 @@
     {{-- Modelo --}}
     <div class="{{ $modo === 'desktop' ? 'md:col-span-2' : '' }}">
         <x-input-label for="modelo" value="Modelo (contém)" class="text-xs" />
-        <x-text-input id="modelo" name="modelo" type="text"
+        <x-text-input id="modelo" name="modelo" type="text" placeholder="Uno || Palio || Civic"
             class="mt-1 block w-full text-sm h-10"
             value="{{ request('modelo') }}" />
     </div>

@@ -492,11 +492,21 @@ class RegistroController extends Controller
         });
     }
 
+    // Troca a boolean do no_patio. Função para poder inverter facilmente para o usuário.
+    public function togglePatio($id)
+    {
+        $registro = Registros::findOrFail($id); // busca o registro no banco. Se não achar, lança a 404.
+        $registro->no_patio = !$registro->no_patio; // inverte o valor atual , ! (NOT lógico)
+        $registro->save(); // grava a alteração no banco
+
+        return back()->with('success', 'Status atualizado!'); // volta para tela anterior e exibe mensagem flash
+    }
+
     // Soft delete função para puxar na rota e fazer o delete bem fofinho que só muda status em vez de deletar total
     public function destroy(Registros $registro)
     {
         $registro->delete();
-        return back()->with('sucess', 'Registro enviado para a lixeira.');
+        return back()->with('success', 'Registro enviado para a lixeira.');
     }
 
     // retorna a lista com todos os registros que estão com status deletado, com paginate de 6 igual a lista normal
@@ -516,7 +526,7 @@ class RegistroController extends Controller
     {
         $registro = Registros::withTrashed()->findOrFail($id); // inclui deletador
         $registro->restore();
-        return redirect()->route('registros.trashed')->with('sucess', 'Registro restaurado com sucesso');
+        return redirect()->route('registros.trashed')->with('success', 'Registro restaurado com sucesso');
     }
 
     // Apagou assim é vala papai, nunca mais será visto. F
@@ -524,6 +534,6 @@ class RegistroController extends Controller
     {
         $registro = Registros::withTrashed()->findOrFail($id);
         $registro->forceDelete(); // Hard Delete
-        return redirect()->route('registros.trashed')->with('sucess', 'Registro deletado permanentemente');
+        return redirect()->route('registros.trashed')->with('success', 'Registro deletado permanentemente');
     }
 }

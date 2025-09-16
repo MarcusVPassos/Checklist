@@ -31,7 +31,7 @@
         <button type="button" class="block w-full text-left" {{-- Botão que dispara um CustomEvent global para abrir o modal (Alpine escuta) --}}
             @click.prevent="window.dispatchEvent(new CustomEvent('abrir-registro', { detail: { id: {{ $r->id }} } }))">
             <span class="ml-1 text-md font-medium text-gray-800 dark:text-gray-200">
-                Criado em {{ $r->created_at?->format('d/m/Y H:i') ?? '—' }}        {{-- por {{$r->user_id}} --}}
+                Criado em {{ $r->created_at?->format('d/m/Y H:i') ?? '—' }} {{-- por {{$r->user_id}} --}}
             </span>
             <img src="{{ $capaUrl }}" class="h-48 w-full object-cover" alt="Capa" loading="lazy">
             {{-- Imagem de capa; loading="lazy" ajuda na performance --}}
@@ -57,16 +57,68 @@
                 @click.prevent="window.dispatchEvent(new CustomEvent('editar-registro', { detail: { id: {{ $r->id }} } }))">
                 Editar
             </x-primary-button>
+            <!-- BOTÃO QUE ABRE O MODAL -->
+            @if ($r->no_patio)
+                <x-secondary-button type="button"
+                    x-on:click="$dispatch('open-modal', 'confirmar-status-{{ $r->id }}')">
+                    Marcar como saiu
+                </x-secondary-button>
+            @else
+                <x-primary-button type="button"
+                    x-on:click="$dispatch('open-modal', 'confirmar-status-{{ $r->id }}')">
+                    Marcar como no pátio
+                </x-primary-button>
+            @endif
+
+            <!-- MODAL DE CONFIRMAÇÃO -->
+            <x-modal name="confirmar-status-{{ $r->id }}" :show="false">
+                <form method="POST" action="{{ route('registros.togglePatio', $r->id) }}" class="p-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Tem certeza que deseja alterar o status?
+                    </h2>
+
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <x-secondary-button type="button" x-on:click="$dispatch('close')">
+                            Cancelar
+                        </x-secondary-button>
+
+                        <x-primary-button type="submit">
+                            Confirmar
+                        </x-primary-button>
+                    </div>
+                </form>
+            </x-modal>
+
+
 
             {{-- EXCLUIR (softDelete) --}}
-            <form method="POST" action="{{ route('registros.destroy', $r->id) }}"
-                onsubmit="return confirm('Enviar este registro para a lixeira?')">
-                @csrf
-                @method('DELETE')
-                <x-danger-button>
+                <x-danger-button type="button"
+                    x-on:click="$dispatch('open-modal', 'confirmar-exclusao-{{ $r->id }}')">
                     Excluir
                 </x-danger-button>
-            </form>
+
+            <x-modal name="confirmar-exclusao-{{$r->id}}" :show="false">
+                <form method="POST" action="{{ route('registros.destroy', $r->id) }}" class="p-4">
+                    @csrf
+                    @method('DELETE')
+
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Tem certeza que deseja excluir?
+                    </h2>
+
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <x-secondary-button type="button" x-on:click="$dispatch('close')">
+                            Cancelar
+                        </x-secondary-button>
+                        <x-primary-button type="submit">
+                            Confirmar
+                        </x-primary-button>
+                    </div>
+                </form>
+            </x-modal>
         </div>
     </div>
 @endforeach
