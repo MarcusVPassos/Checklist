@@ -6,8 +6,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistroController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', fn () => to_route('registros.index'))
+    ->middleware('auth');
+
+Route::fallback(function () {
+    return redirect('/registros');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
@@ -37,61 +40,56 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->middleware('permission:users.view')   // 'auth' já está no grupo
         ->name('logs.index');
 });
-// Route::resource('registros', RegistroController::class);
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     // === REGISTROS ===
 
     // Lista + arquivados (GETs "fixos" primeiro)
     Route::get('/registros', [RegistroController::class, 'index'])
-        ->middleware(['auth', 'permission:registros.view'])
+        ->middleware(['permission:registros.view'])
         ->name('registros.index');
 
     Route::get('/registros/arquivados', [RegistroController::class, 'trashed'])
-        ->middleware(['auth', 'permission:registros.view'])
+        ->middleware(['permission:registros.view'])
         ->name('registros.trashed');
 
     // Formulários (GETs específicos)
     Route::get('/registros/create', [RegistroController::class, 'create'])
-        ->middleware(['auth', 'permission:registros.create'])
+        ->middleware(['permission:registros.create'])
         ->name('registros.create');
 
     Route::get('/registros/{registro}/edit', [RegistroController::class, 'edit'])
-        ->middleware(['auth', 'permission:registros.update'])
+        ->middleware(['permission:registros.update'])
         ->name('registros.edit');
 
     // Ações (POST/PUT/PATCH/DELETE)
     Route::post('/registros', [RegistroController::class, 'store'])
-        ->middleware(['auth', 'permission:registros.create'])
+        ->middleware(['permission:registros.create'])
         ->name('registros.store');
 
     Route::put('/registros/{registro}', [RegistroController::class, 'update'])
-        ->middleware(['auth', 'permission:registros.update'])
+        ->middleware(['permission:registros.update'])
         ->name('registros.update');
 
     Route::patch('/registros/{id}/restore', [RegistroController::class, 'restore'])
-        ->middleware(['auth', 'permission:registros.update'])
+        ->middleware(['permission:registros.update'])
         ->name('registros.restore');
 
     Route::patch('/registros/{id}/toggle-patio', [RegistroController::class, 'togglePatio'])
-        ->middleware(['auth', 'permission:registros.update'])
+        ->middleware(['permission:registros.update'])
         ->name('registros.togglePatio');
 
     Route::delete('/registros/{id}/delete', [RegistroController::class, 'forceDelete'])
-        ->middleware(['auth', 'permission:registros.delete'])
+        ->middleware(['permission:registros.delete'])
         ->name('registros.forceDelete');
 
     Route::delete('/registros/{registro}', [RegistroController::class, 'destroy'])
-        ->middleware(['auth', 'permission:registros.delete'])
+        ->middleware(['permission:registros.delete'])
         ->name('registros.destroy');
 
     // Por último: a rota curinga SHOW
     Route::get('/registros/{registro}', [RegistroController::class, 'show'])
-        ->middleware(['auth', 'permission:registros.view'])
+        ->middleware(['permission:registros.view'])
         ->name('registros.show');
 
 
