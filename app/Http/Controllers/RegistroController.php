@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage; // Para salvar arquivos no disco configu
 
 class RegistroController extends Controller
 {
+
     public function index(Request $request)
     {
         // catálogos para selects "inteligentes"
@@ -141,7 +142,7 @@ class RegistroController extends Controller
             // Monta resposta JSON com campos prontos para o front
             return response()->json([
                 'id'               => $registro->id,
-                'user'             => $registro->user?->name,  
+                'user'             => $registro->user?->name,
                 'placa'            => $registro->placa,
                 'tipo'             => $registro->tipo,
                 'no_patio'         => (bool) $registro->no_patio, // coerção para boolean
@@ -244,7 +245,7 @@ class RegistroController extends Controller
             Storage::disk('public')->put($target, $bin);
 
             // Atualiza o caminho verdadeiro da assinatura no banco
-            $registro->update(['assinatura_path' => $target]);
+            $registro->updateQuietly(['assinatura_path' => $target]);
 
             /**
              * 3) Itens (relação N:N):
@@ -318,6 +319,9 @@ class RegistroController extends Controller
              * - Para app web: redireciona com flash message.
              * - (Se fosse API) devolveríamos JSON 201 com payload do registro.
              */
+
+            // activity()->log("Registro #{$registro->id} criado por " . Auth::user()->name);
+
             return redirect()
                 ->route('registros.index')
                 ->with('success', 'Registro criado com sucesso!');
@@ -532,8 +536,27 @@ class RegistroController extends Controller
     // Apagou assim é vala papai, nunca mais será visto. F
     public function forceDelete($id)
     {
-        $registro = Registros::withTrashed()->findOrFail($id);
-        $registro->forceDelete(); // Hard Delete
-        return redirect()->route('registros.trashed')->with('success', 'Registro deletado permanentemente');
+        DB::transaction(function () use ($id) {
+            // carrega também as relações para apagar tudo de forma atômica
+            $registro = Registros::withTrashed()
+                ->with(['imagens', 'itens']) // itens é belongsToMany, imagens é hasMany
+                ->findOrFail($id);
+
+            // 1) Apaga os ARQUIVOS físicos das imagens
+            foreach ($registro->imagens as $img) {
+                Storage::disk('public')->delete($img->path);
+            }
+
+            // 2) Remove os registros dependentes
+            $registro->imagens()->delete(); // hasMany
+            $registro->itens()->detach();   // pivô N:N
+
+            // 3) Agora pode remover o pai definitivamente
+            $registro->forceDelete(); // dispara o log 'force_deleted' do seu trait
+        });
+
+        return redirect()
+            ->route('registros.trashed')
+            ->with('success', 'Registro deletado permanentemente');
     }
 }

@@ -11,6 +11,7 @@ use Creagia\LaravelSignPad\Templates\BladeDocumentTemplate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\LogsActivity;
 
 /**
  * - $table: mapeia explicitamente a tabela "registros".
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Registros extends Model implements CanBeSigned, ShouldGenerateSignatureDocument
 {
 
-    use HasFactory;
+    use HasFactory, LogsActivity;
     // Para o delete ser mudança de status em vez de delete abrupto  yes baby
     use SoftDeletes;
     /**

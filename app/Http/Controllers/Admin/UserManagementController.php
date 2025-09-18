@@ -67,18 +67,26 @@ class UserManagementController extends Controller
     public function updateRolesPermissions(Request $request, User $user)
     {
         $data = $request->validate([
-            'roles' => ['array'],
+            'roles'       => ['array'],
+            'roles.*'     => ['integer'],      // <- cada item inteiro
             'permissions' => ['array'],
+            'permissions.*' => ['integer'],
         ]);
 
-        $roleNames = Role::whereIn('id', $data['roles'] ?? [])->pluck('name')->all();
-        $permNames = Permission::whereIn('id', $data['permissions'] ?? [])->pluck('name')->all();
+        // Se nada vier marcado, vira array vazio (não reanexa nada):
+        $roleIds = array_values($data['roles'] ?? []);
+        $permIds = array_values($data['permissions'] ?? []);
+
+        // Convertemos para NOME porque a Spatie aceita nome no sync:
+        $roleNames = Role::whereIn('id', $roleIds)->pluck('name')->all();
+        $permNames = Permission::whereIn('id', $permIds)->pluck('name')->all();
 
         $user->syncRoles($roleNames);
         $user->syncPermissions($permNames);
 
         return back()->with('success', 'Papéis e permissões atualizados');
     }
+
 
     public function destroy(User $user)
     {

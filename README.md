@@ -1,3 +1,5 @@
+## ----------------------------------------------------------------------------------------------- ##
+# Spatie Permissions
 Blade: esconder botões/áreas por permissão (UI segura) || @can/@cannot/@canany (Laravel) e diretivas do Spatie para roles existem, mas a boa prática é basear o UI em permissões.
   a) Mostrar “Cadastrar usuário” só pra quem pode criar usuários
     @can('users.create')
@@ -18,18 +20,26 @@ Blade: esconder botões/áreas por permissão (UI segura) || @can/@cannot/@canan
   @endcan
 
 Proteger Rotas/Controladores com middleware:
-  Ex.: somente quem tem a permissão pode acessar as rotas de usuários
+  Ex.: somente quem tem a permissão pode acessar as rotas de usuários 
   - Route::middleware(['auth','permission:users.view'])->get('/admin/users', ...);
+## -------------------------------------------------------------------------------------------------- ##
 
-  
+## -------------------------------------------------------------------------------------------------- ##
+# Spatie Activity Log
+No Model usar *use LogActivity*
+  precisar por a função getActivityOptions
+  -   public function getActivitylogOptions(): LogOptions
+      {
+          return LogOptions::defaults()
+              ->logOnly(['xxx', 'xxx', 'xxx', 'xxx', 'xxx', 'xxx', 'xxx', 'xxx']);
+      }    
+## -------------------------------------------------------------------------------------------------- ##
 
 # 🚗 Sistema CheckList
-
 ## 📌 Resumo
 O sistema tem como objetivo gerenciar **entradas e saídas de veículos** (carros e motos), permitindo o registro detalhado de informações, fotos, itens e status.  
 Conta também com **painel de controle**, listagem, filtros e permissões diferenciadas para usuários e administradores.  
-
----
+* -----------------------------------------------------------------------------------------------------------------------------------*
 
 ## ⚙️ Funcionalidades Principais
 - Registro de **Entrada** e **Saída** de veículos.  
@@ -43,8 +53,7 @@ Conta também com **painel de controle**, listagem, filtros e permissões difere
 - **Pesquisa inteligente**:
   - Busca por **Modelo**, **Placa** ou **Status**.  
 
----
-
+* -----------------------------------------------------------------------------------------------------------------------------------*
 ## 📝 Estrutura dos Registros
 Cada veículo terá os seguintes campos:  
 - **Tipo:** Carro ou Moto.  
@@ -58,13 +67,13 @@ Cada veículo terá os seguintes campos:
   - Placa do reboque.  
   - Assinatura do responsável.  [path:/assinatura_path]
 
----
+* -----------------------------------------------------------------------------------------------------------------------------------*
 
 ## 📊 Painel
 - Exibe o **total de veículos no pátio**.  
 - Mostra **entradas e saídas por mês** com filtro de período.  
 
----
+* -----------------------------------------------------------------------------------------------------------------------------------*
 
 ## 👥 Usuários e Permissões
 ### 🔹 Usuário
@@ -77,13 +86,13 @@ Cada veículo terá os seguintes campos:
 - Visualização de **histórico de edição**.  
 - Permissão para **excluir definitivamente** registros em soft delete.  
 
----
+* -----------------------------------------------------------------------------------------------------------------------------------*
 
 ## 🛠️ Observação
 Este documento poderá ser atualizado conforme novas necessidades surgirem.  
 A documentação também deve incluir **orientações de uso para cada tipo de usuário**.  
 
-
+* -----------------------------------------------------------------------------------------------------------------------------------*
 
 
 
@@ -97,6 +106,6 @@ storage link para uso de fotos;  -> criação de novo path em filesystem para as
 laravel log activies
 breeze para roles [OK]
 darkmode do brezze [OK]
-laravel lang
+laravel lang [OK]
 laravel permissions [OK]
 
