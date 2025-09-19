@@ -26,7 +26,7 @@ class LogController extends Controller
         // 2) Base da consulta.
         //    with('user:id,name') evita N+1 e traz só o necessário da relação user.
         $query = ActivityLog::query()
-            ->with('user:id,name')
+            ->with(['user:id,name', 'model']) 
             ->latest('id'); // ordena por id desc (poderia ser created_at também)
 
         // 3) Aplica filtros condicionalmente usando ->when()
