@@ -199,4 +199,24 @@ return [
 
         'store' => 'default',
     ],
+    // Permissões que gestores PODEM conceder
+    'delegaveis' => [
+        'registros.view',
+        'registros.create',
+        'registros.update',
+        'registros.restore',
+    ],
+
+    // Permissões que NUNCA podem ser delegadas por gestor
+    'protegidas' => [
+        'users.delete',
+        'users.assign-roles',
+        'users.assign-permissions',
+        'registros.delete',
+        'registros.force-delete',
+    ],
+
+    // Roles que NUNCA podem ser atribuídos por gestor
+    'roles_protegidos' => ['admin','gestor'],
+
 ];

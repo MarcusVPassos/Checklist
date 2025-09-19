@@ -37,7 +37,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->name('users.destroy');
 
     Route::get('logs', [LogController::class, 'index'])
-        ->middleware('permission:users.view')   // 'auth' já está no grupo
+        ->middleware('permission:logs.view')   // 'auth' já está no grupo
         ->name('logs.index');
 });
 
@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
         ->name('registros.index');
 
     Route::get('/registros/arquivados', [RegistroController::class, 'trashed'])
-        ->middleware(['permission:registros.view'])
+        ->middleware(['permission:registros.restore|registros.force-delete'])
         ->name('registros.trashed');
 
     // Formulários (GETs específicos)
@@ -72,15 +72,15 @@ Route::middleware('auth')->group(function () {
         ->name('registros.update');
 
     Route::patch('/registros/{id}/restore', [RegistroController::class, 'restore'])
-        ->middleware(['permission:registros.update'])
+        ->middleware(['permission:registros.restore'])
         ->name('registros.restore');
 
     Route::patch('/registros/{id}/toggle-patio', [RegistroController::class, 'togglePatio'])
-        ->middleware(['permission:registros.update'])
+        ->middleware(['permission:registros.view'])
         ->name('registros.togglePatio');
 
     Route::delete('/registros/{id}/delete', [RegistroController::class, 'forceDelete'])
-        ->middleware(['permission:registros.delete'])
+        ->middleware(['permission:registros.force-delete'])
         ->name('registros.forceDelete');
 
     Route::delete('/registros/{registro}', [RegistroController::class, 'destroy'])

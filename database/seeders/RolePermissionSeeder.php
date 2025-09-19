@@ -24,14 +24,19 @@ class RolePermissionSeeder extends Seeder
             'users.assign-roles',
             'users.assign-permissions',
 
-            // Exemplo: Registros (só pra ilustrar botões/visões)
+            //Registros 
             'registros.view',
             'registros.create',
             'registros.update',
             'registros.delete',
+            'registros.restore',
+            'registros.force-delete',
+
+            // Auditoria
+            'logs.view',
         ];
 
-        foreach ($permissoes as $p){
+        foreach ($permissoes as $p) {
             Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
         }
 
@@ -44,12 +49,20 @@ class RolePermissionSeeder extends Seeder
         // 4) Atribuição de permissões aos papéis
         $admin->syncPermissions(Permission::all()); // admin total
         $gestor->syncPermissions([
-            'users.view', 'users.create', 'users.update',
-            'users.assign-roles', // gestor pode conceder papéis (ajuste conforme sua política)
-            'registros.view','registros.create','registros.update',
+            'users.view',
+            'users.create',
+            'users.update',
+            'registros.view',
+            'registros.create',
+            'registros.update',
+            'registros.restore',
+            'registros.delete',
+            'users.assign-roles',
+            'users.assign-permissions',
         ]);
         $colab->syncPermissions([
-            'registros.view','registros.create',
+            'registros.view',
+            'registros.create',
         ]);
         $regu->syncPermissions([
             'registros.view',

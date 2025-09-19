@@ -17,36 +17,43 @@
             @endif
 
             <form method="POST" action="{{ route('admin.users.roles-perms.update', $user) }}"
-                  class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow space-y-6">
+                class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow space-y-6">
                 @csrf
                 @method('PUT')
 
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Papéis</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                        @foreach($roles as $role)
-                            <label class="inline-flex items-center gap-2">
-                                <input type="checkbox" name="roles[]" value="{{ $role->id }}"
-                                       @checked($user->roles->pluck('id')->contains($role->id))
-                                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                <span>{{ $role->name }}</span>
-                            </label>
+                        {{-- ROLES --}}
+                        @foreach ($roles as $role)
+                            @can('assign-role', [$role->name, $user])
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="roles[]" value="{{ $role->id }}"
+                                        @checked($user->roles->pluck('id')->contains($role->id))
+                                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span>{{ $role->name }}</span>
+                                </label>
+                            @endcan
                         @endforeach
                     </div>
                 </div>
 
-                <hr class="border-gray-200 dark:border-gray-700"/>
+                <hr class="border-gray-200 dark:border-gray-700" />
 
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Permissões (diretas)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 max-h-80 overflow-auto pr-1">
-                        @foreach($permissions as $perm)
-                            <label class="inline-flex items-center gap-2">
-                                <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
-                                       @checked($user->permissions->pluck('id')->contains($perm->id))
-                                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-sm">{{ $perm->name }}</span>
-                            </label>
+
+                        {{-- PERMISSÕES --}}
+                        @foreach ($permissions as $perm)
+                            @can('assign-permission', $perm->name)
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
+                                        @checked($user->permissions->pluck('id')->contains($perm->id))
+                                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-sm">{{ $perm->name }}</span>
+                                </label>
+                            @endcan
                         @endforeach
                     </div>
                     <p class="mt-2 text-xs text-gray-500">

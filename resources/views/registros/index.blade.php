@@ -3,14 +3,18 @@
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Registros</h2>
             <div class="flex gap-2">
+                @can('registros.create')
                 <a href="{{ route('registros.create') }}"
                     class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     Novo Registro
                 </a>
-                <a href="{{ route('registros.trashed') }}"
-                    class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                    Lixeira
-                </a>
+                @endcan
+                @canany(['registros.restore', 'registros.force-delete'])
+                    <a href="{{ route('registros.trashed') }}"
+                        class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                        Lixeira
+                    </a>
+                @endcanany
             </div>
         </div>
     </x-slot>
@@ -20,14 +24,18 @@
         <div class=" p-4 sm:px-2 lg:px-5 space-y-3">
             {{-- atalhos visíveis só no mobile --}}
             <div class="flex w-full gap-2">
+                @can('registros.create')
                 <a href="{{ route('registros.create') }}"
                     class="md:hidden p-3 text-center rounded-md bg-indigo-600 text-white text-md w-full ">
                     Novo
                 </a>
+                @endcan
+                @canany(['registros.restore', 'registros.force-delete'])
                 <a href="{{ route('registros.trashed') }}"
                     class="md:hidden p-3 text-center rounded-md bg-indigo-600 text-white text-md w-full ">
                     Lixeira
                 </a>
+                @endcanany
             </div>
             {{-- ========== FILTROS ========== --}}
             <div @toggle-filtros.window="open = !open" x-data="{ open: false }">

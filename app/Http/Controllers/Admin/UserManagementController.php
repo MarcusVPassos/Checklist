@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Routing\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -41,6 +42,7 @@ class UserManagementController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
             'roles' => ['array'],
+            'roles.*' => ['integer'],
         ]);
 
         $user = User::create([
@@ -49,9 +51,16 @@ class UserManagementController extends Controller
             'password' => bcrypt($data['password']),
         ]);
 
-        // Atribui papéis opcionais
-        if (!empty($data['roles'])) {
-            $user->syncRoles(Role::whereIn('id', $data['roles'])->pluck('name')->all());
+        // Converte IDs -> nomes
+        $roleNames = Role::whereIn('id', $data['roles'] ?? [])->pluck('name')->all();
+
+        // Filtra pelo Gate (alvo = $user recém criado)
+        $rolesAplicar = array_values(array_filter($roleNames, function ($roleName) use ($user) {
+            return Gate::allows('assign-role', $roleName, $user);
+        }));
+
+        if ($rolesAplicar) {
+            $user->syncRoles($rolesAplicar);
         }
 
         return redirect()->route('admin.users.index')->with('success', 'Usuário criado');
@@ -67,22 +76,31 @@ class UserManagementController extends Controller
     public function updateRolesPermissions(Request $request, User $user)
     {
         $data = $request->validate([
-            'roles'       => ['array'],
-            'roles.*'     => ['integer'],      // <- cada item inteiro
+            'roles' => ['array'],
+            'roles.*' => ['integer'],
             'permissions' => ['array'],
             'permissions.*' => ['integer'],
         ]);
 
-        // Se nada vier marcado, vira array vazio (não reanexa nada):
-        $roleIds = array_values($data['roles'] ?? []);
-        $permIds = array_values($data['permissions'] ?? []);
+        // IDs -> nomes aceitos pela Spatie
+        $roleNames = Role::whereIn('id', $data['roles'] ?? [])->pluck('name')->all();
+        $permNames = Permission::whereIn('id', $data['permissions'] ?? [])->pluck('name')->all();
 
-        // Convertemos para NOME porque a Spatie aceita nome no sync:
-        $roleNames = Role::whereIn('id', $roleIds)->pluck('name')->all();
-        $permNames = Permission::whereIn('id', $permIds)->pluck('name')->all();
+        // ----- ROLES (aplica só os permitidos) -----
+        $rolesAplicar = array_values(array_filter($roleNames, function ($roleName) use ($user) {
+            return Gate::allows('assign-role', $roleName, $user);
+        }));
 
-        $user->syncRoles($roleNames);
-        $user->syncPermissions($permNames);
+        // ----- PERMISSÕES (whitelist only) -----
+        $permsAplicar = array_values(array_filter($permNames, function ($permName) {
+            return Gate::allows('assign-permission', $permName);
+        }));
+
+        // Sincroniza apenas o que passou nas regras
+        $user->syncRoles($rolesAplicar);
+        $user->syncPermissions($permsAplicar);
+
+        // (opcional) logar tentativas bloqueadas comparando arrays
 
         return back()->with('success', 'Papéis e permissões atualizados');
     }

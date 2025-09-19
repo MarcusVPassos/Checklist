@@ -32,12 +32,13 @@
                             <div class="mb-2 flex items-center justify-between">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $r->placa }}</h3>
                                 <span class="rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-800 dark:text-gray-200">
-                                    Deletado em {{ optional($r->deleted_at)->format('d/m/Y H:i') }}
+                                    Deletado em {{ optional($r->deleted_at)->format('d/m/Y H:i') }} por {{ Auth::user()->name}}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600 dark:text-gray-300">{{ $r->marca?->nome }} — {{ $r->modelo }}</p>
 
                             <div class="mt-4 flex gap-2">
+                                @can('registros.restore')
                                 {{-- RESTAURAR --}}
                                 <form method="POST" action="{{ route('registros.restore', $r->id) }}">
                                     @csrf
@@ -46,7 +47,9 @@
                                         Restaurar
                                     </button>
                                 </form>
+                                @endcan
 
+                                @can('registros.force-delete')
                                 {{-- EXCLUIR DEFINITIVAMENTE (com limpeza de arquivos no controller) --}}
                                 <form method="POST" action="{{ route('registros.forceDelete', $r->id) }}"
                                       onsubmit="return confirm('Remover permanentemente (apaga também os arquivos)?');">
@@ -56,6 +59,7 @@
                                         Excluir definitivamente
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </div>
                     </div>

@@ -15,12 +15,16 @@
                     <x-nav-link :href="route('registros.index')" :active="request()->routeIs('registros.index')">
                         {{ __('Checklist') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
-                        {{ __('Usuários e Permissões') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('admin.logs.index')" :active="request()->routeIs('admin.logs.index')">
-                        {{ __('Auditória') }}
-                    </x-nav-link>
+                    @can ('users.view')
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
+                            {{ __('Usuários e Permissões') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('logs.view')
+                        <x-nav-link :href="route('admin.logs.index')" :active="request()->routeIs('admin.logs.index')">
+                            {{ __('Auditória') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 

@@ -53,10 +53,12 @@
             </div>
         </button>
         <div class="flex gap-2 justify-end mb-2 mr-2">
+            @can('registros.update')
             <x-primary-button type="button"
                 @click.prevent="window.dispatchEvent(new CustomEvent('editar-registro', { detail: { id: {{ $r->id }} } }))">
                 Editar
             </x-primary-button>
+            @endcan
             <!-- BOTÃO QUE ABRE O MODAL -->
             @if ($r->no_patio)
                 <x-secondary-button type="button"
@@ -92,11 +94,13 @@
                 </form>
             </x-modal>
             
+            @can('registros.delete')
             {{-- EXCLUIR (softDelete) --}}
             <x-danger-button type="button"
                 x-on:click="$dispatch('open-modal', 'confirmar-exclusao-{{ $r->id }}')">
                 Excluir
             </x-danger-button>
+            @endcan
 
             <!-- MODAL DE CONFIRMAÇÃO de exclusão -->
             <x-modal name="confirmar-exclusao-{{ $r->id }}" :show="false">
