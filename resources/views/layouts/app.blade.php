@@ -112,6 +112,23 @@
         </main>
     </div>
 
+    {{-- Modal global de erro --}}
+    @if (session('error'))
+        <x-modal name="erro-permissao" :show="true" maxWidth="md" focusable>
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-red-600 mb-3">Acesso Negado</h2>
+                <p class="text-gray-700 dark:text-gray-300">
+                    {{ session('error') }}
+                </p>
+                <div class="mt-4 flex justify-end">
+                    <x-secondary-button x-on:click="$dispatch('close')">
+                        Fechar
+                    </x-secondary-button>
+                </div>
+            </div>
+        </x-modal>
+    @endif
+
     @stack('scripts')
 </body>
 

@@ -100,10 +100,6 @@ Route::middleware('auth')->group(function () {
     // Route::get('/registros/arquivados', [RegistroController::class, 'trashed'])->name('registros.trashed');
     // Route::patch('/registros/{id}/restore', [RegistroController::class, 'restore'])->name('registros.restore');
     // Route::delete('/registros/{id}/delete', [RegistroController::class, 'forceDelete'])->name('registros.forceDelete');
-
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';
