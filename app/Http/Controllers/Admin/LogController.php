@@ -15,8 +15,6 @@ class LogController extends Controller
         //    Assim conseguimos repassar para a view e manter os "values" preenchidos.
         $filters = $request->only([
             'action',        // string ex: created, updated, permission-detached...
-            'model_type',    // FQCN ex: App\Models\Registro
-            'model_id',      // inteiro
             'user_id',       // inteiro
             'date_from',     // YYYY-MM-DD
             'date_to',       // YYYY-MM-DD
@@ -37,19 +35,9 @@ class LogController extends Controller
             $q->where('action', $action);
         });
 
-        // Filtra por model_type (FQCN ex.: App\Models\User)
-        $query->when($filters['model_type'] ?? null, function ($q, $type) {
-            $q->where('model_type', $type);
-        });
-
-        // Filtra por model_id (inteiro)
-        $query->when($filters['model_id'] ?? null, function ($q, $id) {
-            $q->where('model_id', (int) $id);
-        });
-
         // Filtra por usuário causador (se você popula user_id ao logar)
-        $query->when($filters['user_id'] ?? null, function ($q, $userId) {
-            $q->where('user_id', (int) $userId);
+        $query->when($filters['user_id'] ?? null, function ($q) {
+            $q->where('user_id');
         });
 
         // Intervalo de datas (created_at)
@@ -70,11 +58,6 @@ class LogController extends Controller
             // Apenas "até"
             $query->when($dateTo,   fn ($q, $to)   => $q->where('created_at', '<=', $to . ' 23:59:59'));
         }
-
-        // Busca textual simples em "description" (LIKE %q%)
-        $query->when($filters['q'] ?? null, function ($q, $term) {
-            $q->where('description', 'like', '%' . str_replace('%', '\\%', $term) . '%');
-        });
 
         // 4) Paginação (Tailwind-ready)
         //    Docs: https://laravel.com/docs/12.x/pagination#displaying-pagination-results

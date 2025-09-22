@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Requests\Admin\UpdateUserRequest;
 use Illuminate\Routing\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
 
 
 class UserManagementController extends Controller
@@ -103,6 +106,25 @@ class UserManagementController extends Controller
         // (opcional) logar tentativas bloqueadas comparando arrays
 
         return back()->with('success', 'Papéis e permissões atualizados');
+    }
+
+    public function update(UpdateUserRequest $request, User $user)
+    {
+        // Sempre atualiza nome e e-mail
+        $user->name  = $request->string('name');
+        $user->email = $request->string('email');
+
+        // Se admin preencheu senha, atualiza com hash e invalida "lembrar-me"
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->input('password')); // <—
+            $user->remember_token = Str::random(60);
+            // Se usar Sanctum e quiser revogar tokens:
+            // $user->tokens()->delete();
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Usuário atualizado com sucesso.');
     }
 
 

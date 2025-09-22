@@ -36,6 +36,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->middleware('permission:users.delete')
         ->name('users.destroy');
 
+    Route::put('users/{user}', [\App\Http\Controllers\Admin\UserManagementController::class, 'update'])
+        ->middleware('permission:users.update')
+        ->name('users.update');
+
     Route::get('logs', [LogController::class, 'index'])
         ->middleware('permission:logs.view')   // 'auth' já está no grupo
         ->name('logs.index');

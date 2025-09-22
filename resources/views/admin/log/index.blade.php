@@ -30,28 +30,6 @@
                                 </select>
                             </div>
 
-                            {{-- Model Type (FQCN) --}}
-                            <div>
-                                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Modelo</label>
-                                <select name="model_type"
-                                    class="w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700">
-                                    <option value="">-- Todos --</option>
-                                    @foreach ($modelTypes as $type)
-                                        <option value="{{ $type }}" @selected(($filters['model_type'] ?? '') === $type)>
-                                            {{ $type }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            {{-- Model ID (número) --}}
-                            <div>
-                                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">ID do Modelo</label>
-                                <input type="number" name="model_id" inputmode="numeric" min="0"
-                                    value="{{ $filters['model_id'] ?? '' }}"
-                                    class="w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700" />
-                            </div>
-
                             {{-- Usuário causador --}}
                             <div>
                                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Usuário</label>
@@ -77,14 +55,6 @@
                             <div>
                                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Até (data)</label>
                                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"
-                                    class="w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700" />
-                            </div>
-
-                            {{-- Busca textual na descrição --}}
-                            <div class="md:col-span-2 lg:col-span-2">
-                                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Busca</label>
-                                <input type="text" name="q" placeholder="Procurar na descrição..."
-                                    value="{{ $filters['q'] ?? '' }}"
                                     class="w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700" />
                             </div>
                         </div>
