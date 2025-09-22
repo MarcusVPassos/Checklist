@@ -29,7 +29,9 @@ class UserManagementController extends Controller
     public function index()
     {
         $users = User::with(['roles', 'permissions'])->paginate(15);
-        return view('admin.users.index', compact('users'));
+        $roles = Role::orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+        return view('admin.users.index', compact('users','roles', 'permissions'));
     }
 
     public function create()

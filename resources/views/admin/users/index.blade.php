@@ -3,12 +3,33 @@
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Usuários</h2>
 
+            {{-- Botão que abre o modal de criar usuário --}}
             @can('users.create')
-                <a href="{{ route('admin.users.create') }}"
-                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                <button type="button"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700" x-data
+                    x-on:click="$dispatch('open-modal', 'criar-usuario')">
                     Novo Usuário
-                </a>
+                </button>
             @endcan
+
+            {{-- Modal: Criar Usuário --}}
+            @can('users.create')
+                <x-modal name="criar-usuario" :show="false" focusable maxWidth="2xl">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                            Novo Usuário
+                        </h3>
+
+                        @include('admin.users.partials.form', [
+                            'action' => route('admin.users.store'),
+                            'method' => 'POST',
+                            'user' => null, // criação => user null
+                            'roles' => $roles, // precisa vir do controller
+                        ])
+                    </div>
+                </x-modal>
+            @endcan
+
         </div>
     </x-slot>
 
@@ -69,12 +90,34 @@
                                             </button>
                                         @endcan
 
+                                        {{-- Botão Permissões (abre modal) --}}
                                         @canany(['users.assign-roles', 'users.assign-permissions'])
-                                            <a href="{{ route('admin.users.roles-perms', $u) }}"
-                                                class="rounded border px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700">
+                                            <button type="button"
+                                                class="rounded border px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                x-data
+                                                x-on:click="$dispatch('open-modal', 'roles-perms-{{ $u->id }}')">
                                                 Permissões
-                                            </a>
+                                            </button>
                                         @endcanany
+
+                                        {{-- Modal: Criar Usuário --}}
+                                        @can('users.assign-roles')
+                                            <x-modal name="roles-perms-{{ $u->id }}" :show="false" focusable
+                                                maxWidth="2xl">
+                                                <div class="p-6">
+                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                                                        Permissões
+                                                    </h3>
+
+                                                    @include('admin.users.partials.role_perms', [
+                                                        'user' => $u,
+                                                        'roles' => $roles, // precisa vir do controller
+                                                        'permissions' => $permissions, // precisa vir do controller
+                                                    ])
+
+                                                </div>
+                                            </x-modal>
+                                        @endcan
 
                                         @can('users.delete')
                                             <!-- Botão que dispara o modal pelo nome único do usuário -->
