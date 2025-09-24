@@ -6,7 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistroController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => to_route('registros.index'))
+Route::get('/', fn() => to_route('registros.index'))
     ->middleware('auth');
 
 Route::fallback(function () {
@@ -39,6 +39,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::put('users/{user}', [\App\Http\Controllers\Admin\UserManagementController::class, 'update'])
         ->middleware('permission:users.update')
         ->name('users.update');
+
+    Route::patch('users/{user}/restore', [UserManagementController::class, 'restore'])->name('users.restore');
+    Route::delete('users/{user}/force', [UserManagementController::class, 'forceDelete'])->name('users.forceDelete');
 
     Route::get('logs', [LogController::class, 'index'])
         ->middleware('permission:logs.view')   // 'auth' já está no grupo

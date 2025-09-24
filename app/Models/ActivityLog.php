@@ -33,7 +33,7 @@ class ActivityLog extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     /**
@@ -42,7 +42,7 @@ class ActivityLog extends Model
      */
     public function model(): MorphTo
     {
-        return $this->morphTo(__FUNCTION__, 'model_type', 'model_id');
+        return $this->morphTo(__FUNCTION__, 'model_type', 'model_id')->withTrashed();
     }
 
     public function getActorNameAttribute(): string

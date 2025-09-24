@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Str;
-
+use Illuminate\Validation\Rule;
 
 class UserManagementController extends Controller
 {
@@ -26,12 +26,26 @@ class UserManagementController extends Controller
             ->only(['editRolesPermissions', 'updateRolesPermissions']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with(['roles', 'permissions'])->paginate(15);
+        // pegue o valor como string "pura"
+        $status = $request->query('status'); // "", "trashed" ou "all"
+
+        // constrói a base
+        $query = User::with(['roles', 'permissions']);
+
+        // aplica o filtro corretamente
+        if ($status === 'trashed') {
+            $query->onlyTrashed();
+        } elseif ($status === 'all') {
+            $query->withTrashed();
+        } // default: apenas ativos
+
+        // AGORA sim, use $query (não recrie a query)
+        $users = $query->paginate(15)->appends(['status' => $status]);
         $roles = Role::orderBy('name')->get();
         $permissions = Permission::orderBy('name')->get();
-        return view('admin.users.index', compact('users','roles', 'permissions'));
+        return view('admin.users.index', compact('users', 'roles', 'permissions'));
     }
 
     public function create()
@@ -44,10 +58,18 @@ class UserManagementController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'min:3'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'email'    => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->withoutTrashed(), // ignora deletados
+            ],
             'password' => ['required', 'confirmed', 'min:8'],
             'roles' => ['array'],
             'roles.*' => ['integer'],
+        ], [
+            'email.unique' => 'Este e-mail já está em uso.',
+            'password.confirmed' => 'A confirmação da senha não confere.',
+            'password.min' => 'A senha deve ter ao menos :min caracteres.',
         ]);
 
         $user = User::create([
@@ -134,5 +156,19 @@ class UserManagementController extends Controller
     {
         $user->delete();
         return back()->with('success', 'Usuário removido');
+    }
+
+    public function restore(int $id)
+    {
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->restore();
+        return back()->with('success', 'Usuário restaurado.');
+    }
+
+    public function forceDelete(int $id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->forceDelete();
+        return back()->with('success', 'Usuário excluído definitivamente.');
     }
 }

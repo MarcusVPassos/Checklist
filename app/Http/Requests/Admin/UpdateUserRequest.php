@@ -27,7 +27,11 @@ class UpdateUserRequest extends FormRequest
 
         return [
             'name'  => ['required', 'string', 'min:3'],
-            'email' => ['required', 'email', Rule::unique('users','email')->ignore($userId)],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($userId)->withoutTrashed(),
+            ],
             // senha é opcional no modal; se vier preenchida, precisa confirmar
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ];
@@ -37,7 +41,7 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name.required' => 'Informe o nome.',
-            'email.required'=> 'Informe o e-mail.',
+            'email.required' => 'Informe o e-mail.',
             'email.unique'  => 'Este e-mail já está em uso.',
             'password.confirmed' => 'A confirmação de senha não confere.',
         ];
