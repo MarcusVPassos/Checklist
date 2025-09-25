@@ -28,4 +28,6 @@ class Marcas extends Model
     public function registros(){
         return $this->hasMany(Registros::class);
     }
+
+    
 }

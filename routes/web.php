@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistroController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +51,37 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 });
 
 Route::middleware('auth')->group(function () {
+    // MARCAS
+    Route::get('/marcas',[MarcaController::class, 'index'])->name('marcas.index');
+
+    Route::get('/marcas/create', [MarcaController::class, 'create'])->name('marcas.create');
+
+    Route::post('/marcas/store', [MarcaController::class, 'store'])->name('marcas.store');
+
+    Route::get('/marcas/{marcas_id}', [MarcaController::class, 'show'])->name('marcas.show');
+
+    Route::get('/marcas/{marcas_id}/edit', [MarcaController::class, 'edit'])->name('marcas.edit');
+
+    Route::put('/marcas/{marcas_id}',[MarcaController::class, 'update'])->name('marcas.update');
+
+    Route::delete('/marcas/{marcas_id}', [MarcaController::class, 'destroy'])->name('marcas.destroy');
+
+    // Itens
+
+    Route::get ('/itens', [ItemController::class, 'index'])->name('itens.index');
+
+    Route::get('/itens/create', [ItemController::class, 'create'])->name('itens.create');
+
+    Route::post('/itens/store', [ItemController::class, 'store'])->name('itens.store');
+
+    Route::get('/itens/{item_id}', [ItemController::class, 'show'])->name('itens.show');
+
+    Route::get('/itens/{item_id}/edit', [ItemController::class, 'edit'])->name('itens.edit');
+
+    Route::put('/itens/{item_id}', [ItemController::class, 'update'])->name('itens.update');
+
+    Route::delete('/itens/{item_id}', [ItemController::class, 'destroy'])->name('itens.destroy');
+
     // === REGISTROS ===
 
     // Lista + arquivados (GETs "fixos" primeiro)
