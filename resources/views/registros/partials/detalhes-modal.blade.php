@@ -76,7 +76,8 @@
                     {{-- Detalhes em grid com fallback "—" quando ausente --}}
                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">User</div>
+                            <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Responsável
+                            </div>
                             <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
                                 x-text="modal.user || '—'"></div>
                         </div>
@@ -133,14 +134,48 @@
                         </div>
                     </template>
 
-                    {{-- Assinatura --}}
-                    <template x-if="modal.assinatura">
+                    <!-- Assinatura + dados do reboque lado a lado -->
+                    <template x-if="modal.assinatura || modal.reboque_placa || modal.reboque_condutor">
                         <div>
-                            <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Assinatura
+                            <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Reboque
                             </div>
-                            <img :src="modal.assinatura"
-                                class="mt-1 h-28 w-auto rounded border object-contain dark:border-gray-700"
-                                alt="">
+
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
+                                <!-- Coluna 1: Condutor do reboque -->
+                                <div class="space-y-1">
+                                    <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Condutor do reboque
+                                    </div>
+                                    <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
+                                        x-text="modal.reboque_condutor || '—'"></div>
+                                </div>
+
+                                <!-- Coluna 2: Placa do reboque -->
+                                <div class="space-y-1">
+                                    <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Placa do reboque
+                                    </div>
+                                    <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
+                                        x-text="modal.reboque_placa || '—'"></div>
+                                </div>
+
+                                <!-- Coluna 3: Imagem da assinatura -->
+                                <div class="sm:justify-self-end">
+                                    <template x-if="modal.assinatura">
+                                        <img :src="modal.assinatura"
+                                            class="h-28 w-auto rounded border object-contain dark:border-gray-700"
+                                            alt="Assinatura do reboque">
+                                    </template>
+                                    <template x-if="!modal.assinatura">
+                                        <div
+                                            class="h-28 w-full sm:w-40 rounded border border-dashed dark:border-gray-700
+                      flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                                            Sem assinatura
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>

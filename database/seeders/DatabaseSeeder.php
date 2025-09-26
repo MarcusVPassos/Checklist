@@ -14,7 +14,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Primeiro chama o seeder de roles e permissões
-        $this->call(RolePermissionSeeder::class);
+        $this->call([
+            RolePermissionSeeder::class,
+            UsersCsvSeeder::class,
+            MarcasFromCsvSeeder::class,
+            ItensFromCsvSeeder::class,
+        ]);
 
         // Cria ou atualiza o usuário admin padrão
         $admin = User::updateOrCreate(

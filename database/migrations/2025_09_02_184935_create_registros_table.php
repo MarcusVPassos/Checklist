@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();                                           // PK do Registro        
             $table->enum('tipo', [ 'carro' , 'moto' ]);             // Tipos de veículo para escolher                                            
             $table->string('placa') -> unique();                    // Placa única, para busca e evitar duplicidade                    
-            $table->foreignId('marca_id')-> constrained('marcas');  // FK para tabela 'marcas', relacionamento 1:N. por convenção marca_id liga com marcas.id  
-            $table->foreignId('user_id')-> constrained('users');     // FK para tabela 'user', relacionamento 1:N.                                   
+            $table->foreignId('marca_id')->nullable()->constrained('marcas');    // FK para tabela 'marcas', relacionamento 1:N. por convenção marca_id liga com marcas.id  
+            $table->foreignId('user_id')-> constrained('users');    // FK para tabela 'user', relacionamento 1:N.                                   
             $table->string('modelo');                               // Modelo do Veículo        
             $table->text('observacao')->nullable();                 // Observações se necessitar no registro                    
             $table->text('reboque_condutor');                       // Nome do condutor do reboque                
