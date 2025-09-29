@@ -2,11 +2,16 @@
 {{-- name="registro-detalhes" é o identificador que o JS usa pra abrir/fechar --}}
 {{-- :show="false" liga uma prop booleana; maxWidth controla a largura --}}
 <x-modal name="registro-detalhes" :show="false" maxWidth="2xl">
-    <div x-data="registroDetalhesModal()" {{-- cria a instância Alpine deste modal --}} x-on:abrir-registro.window="open($event.detail.id)">
-        {{-- ouve o CustomEvent global e chama open(id) --}}
-        {{-- HEADER fixo (sticky) pra manter título/botão durante scroll do body do modal --}}
+    <div x-data="registroDetalhesModal()" x-on:abrir-registro.window="open($event.detail.id)"
+        x-on:open-modal.window="if ($event.detail === 'registro-detalhes') isOpen = true"
+        x-on:close-modal.window="if (!$event.detail || $event.detail === 'registro-detalhes') isOpen = false"
+        x-on:click.outside="close()" x-on:keydown.escape.window="isOpen = false">
+        {{-- HEADER sticky (com safe-area no iOS) --}}
         <div
-            class="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
+            class="sticky top-0 z-10 flex items-center justify-between gap-2 lg:gap-3
+       border-b border-gray-200 dark:border-gray-700
+       bg-white dark:bg-gray-800 px-3 py-2 pt-[env(safe-area-inset-top)]
+       sm:px-4 sm:py-3 sm:mt-5 lg:px-6 lg:py-4">
             <div class="min-w-0">
                 <h3 class="truncate text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100"
                     x-text="modal.placa || '—'"></h3>
@@ -17,32 +22,41 @@
                     <span x-text="modal.no_patio ? 'No pátio' : 'Saiu'"></span> •
                 </p>
             </div>
-            {{-- Fecha o modal do Jetstream via evento padrão open-modal/close-modal --}}
             <button @click="close()" class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                 aria-label="Fechar">✕</button>
         </div>
 
-        {{-- BODY com scroll interno e skeleton enquanto carrega --}}
-        <div class="p-3 sm:p-4 max-h-[85vh] overflow-y-auto space-y-5">
-
-            {{-- SKELETON de carregamento (placeholder animado) --}}
-            <template x-if="modal.loading">
-                <div class="space-y-4">
+        {{-- BODY: rola só aqui; bloqueia scroll do fundo com x-noscroll --}}
+        <div x-noscroll="isOpen"
+            class="p-2 sm:p-6 lg:p-8
+       max-h-[85dvh] sm:max-h-[65vh] lg:max-h-[80vh]
+       overflow-y-auto overscroll-contain space-y-4 lg:space-y-6">
+            {{-- SKELETON de carregamento (placeholder animado) --}} <template x-if="modal.loading">
+                <div class="space-y-4 sm:space-y-6">
                     <div class="aspect-video w-full rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
                     <div class="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-                    <div class="h-24 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <div class="h-24 sm:h-28 lg:h-32 w-auto rounded border object-contain dark:border-gray-700"></div>
                 </div>
             </template>
 
             {{-- CONTEÚDO real depois do fetch --}}
             <template x-if="!modal.loading">
-                <div class="space-y-6">
+                <div class="space-y-6 sm:space-y-8">
 
                     {{-- Carrossel principal (contain) + contador (slide / total) --}}
                     <div x-show="modal.slides?.length"
-                        class="relative aspect-video w-full rounded-lg bg-black overflow-hidden">
-                        <img :src="modal.slides?.[slideIdx]?.url || ''" :alt="modal.slides?.[slideIdx]?.label || ''"
-                            class="absolute inset-0 h-full w-full object-contain select-none" loading="eager">
+                        class="relative mx-auto rounded-lg bg-black overflow-hidden
+                        aspect-video
+                        w-full
+                        md:max-w-3xl          /* ~768px */
+                        lg:max-w-[900px]      /* ~900px no desktop */
+                        xl:max-w-[1000px]     /* ~1000px em telas maiores */
+                        2xl:max-w-[1100px]    /* limite superior opcional */
+                        max-h-[62vh]          /* nunca passa 62% da altura */
+                        lg:max-h-[58vh]       /* ainda menor em desktop */">
+                        <img :src="modal.slides?.[slideIdx]?.url_full || modal.slides?.[slideIdx]?.url || ''"
+                            class="absolute inset-0 h-full w-full object-contain select-none" loading="eager"
+                            decoding="async" fetchpriority="high" />
                         <div
                             class="absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-0.5 text-xs font-medium text-white">
                             <span x-text="modal.slides?.[slideIdx]?.label || '—'"></span>
@@ -57,10 +71,10 @@
 
                     {{-- Mini-carrossel com vizinhos (prev | atual | next) para navegação rápida --}}
                     <template x-if="modal.slides?.length">
-                        <div class="mt-3 flex items-center justify-center gap-3">
+                        <div class="mt-3 flex items-center justify-center gap-3 sm:gap-2.5">
                             <template x-for="i in neighbors(slideIdx)" :key="'thumb-' + i">
                                 <button type="button"
-                                    class="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded overflow-hidden ring-2 transition"
+                                    class="relative w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 shrink-0 rounded overflow-hidden ring-2 transition"
                                     :class="i === idxWrap(slideIdx) ?
                                         'ring-indigo-500 scale-[1.06]' :
                                         'ring-transparent opacity-80 hover:ring-gray-300 scale-95'"
@@ -74,27 +88,31 @@
                     </template>
 
                     {{-- Detalhes em grid com fallback "—" quando ausente --}}
-                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
                         <div>
                             <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Responsável
                             </div>
                             <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
-                                x-text="modal.user || '—'"></div>
+                                x-text="modal.user || '—'">
+                            </div>
                         </div>
                         <div>
                             <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Placa</div>
                             <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
-                                x-text="modal.placa || '—'"></div>
+                                x-text="modal.placa || '—'">
+                            </div>
                         </div>
                         <div>
                             <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Marca</div>
                             <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
-                                x-text="modal.marca || '—'"></div>
+                                x-text="modal.marca || '—'">
+                            </div>
                         </div>
                         <div>
                             <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Modelo</div>
                             <div class="text-sm sm:text-base text-gray-900 dark:text-gray-100"
-                                x-text="modal.modelo || '—'"></div>
+                                x-text="modal.modelo || '—'">
+                            </div>
                         </div>
                         <div>
                             <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</div>
@@ -141,7 +159,7 @@
                                 Reboque
                             </div>
 
-                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 items-start">
                                 <!-- Coluna 1: Condutor do reboque -->
                                 <div class="space-y-1">
                                     <div class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -191,6 +209,7 @@
         window.registroDetalhesModal = function() {
             return {
                 // estado
+                isOpen: false,
                 modal: {
                     loading: false,
                     slides: []
@@ -248,6 +267,7 @@
                 },
 
                 // ciclo de vida
+
                 reset() {
                     this.modal = {
                         loading: false,
@@ -259,11 +279,11 @@
                 },
 
                 async open(id) {
-                    // Abre o modal do Breeze via evento "open-modal"
                     window.dispatchEvent(new CustomEvent('open-modal', {
                         detail: 'registro-detalhes'
                     }));
-                    // Cancela requisição anterior (se houver)
+                    this.isOpen = true; // <— LIGA o noscroll
+
                     if (this._abort) {
                         this._abort.abort();
                         this._abort = null;
@@ -273,7 +293,6 @@
 
                     this._abort = new AbortController();
                     try {
-                        // Busca detalhes do registro (JSON). GET seguro (sem CSRF); se fosse POST, envie o token CSRF.
                         const res = await fetch(`{{ url('/registros') }}/${id}`, {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -284,8 +303,6 @@
                         });
                         if (!res.ok) throw new Error(`Erro ${res.status}`);
                         const data = await res.json();
-
-                        // Atualiza estado e centraliza o carrossel
                         this.modal = {
                             ...data,
                             loading: false
@@ -297,19 +314,20 @@
                             console.error(e);
                             this.modal.loading = false;
                             alert('Não foi possível carregar os detalhes.');
-                            window.dispatchEvent(new CustomEvent('close-modal', {
-                                detail: 'registro-detalhes'
-                            }));
+                            this.close();
                         }
                     } finally {
                         this._abort = null;
                     }
                 },
 
+
                 close() {
                     window.dispatchEvent(new CustomEvent('close-modal', {
                         detail: 'registro-detalhes'
                     }));
+                    this.isOpen = false; // <— DESLIGA o noscroll
+
                     if (this._abort) {
                         this._abort.abort();
                         this._abort = null;
