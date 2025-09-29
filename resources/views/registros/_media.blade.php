@@ -33,15 +33,21 @@
 
 {{-- ========== ASSINATURA ========== --}}
 <div class="mt-8 e-signpad">
-    <x-input-label value="Assinatura {{ $isEdit ? '(opcional para substituir)' : '(obrigatória)' }}" />
+    <x-input-label value="Assinatura {{ $isEdit ? '(opcional para substituir)' : '(obrigatória)' }}"
+        class="text-gray-700 dark:text-gray-300" />
 
     {{-- Base64 via canvas (preferido) --}}
-    <div class="rounded-md border bg-white p-2 mt-2">
+    <div class="rounded-md border bg-white p-2 mt-2 border-gray-300 dark:border-gray-700">
         <canvas id="sig-canvas" style="width:100%; height:200px;"></canvas>
     </div>
     <div class="flex items-center gap-2 mt-2">
-        <button type="button" id="sig-clear" class="rounded-md border px-3 py-2 text-sm">Limpar</button>
-        <span class="text-xs text-gray-500">Assine no quadro
+        <button type="button" id="sig-clear"
+            class="rounded-md border px-3 py-2 text-sm
+                   text-gray-700 hover:bg-gray-50 border-gray-300
+                   dark:text-gray-200 dark:hover:bg-gray-800 dark:border-gray-700">
+            Limpar
+        </button>
+        <span class="text-xs text-gray-500 dark:text-gray-400">Assine no quadro
             {{ $isEdit ? 'se quiser substituir' : 'para continuar' }}.</span>
     </div>
     <input type="hidden" name="assinatura_b64" id="sig-b64" value="{{ old('assinatura_b64') }}">
@@ -49,16 +55,16 @@
 
     {{-- Fallback por arquivo --}}
     <div class="mt-3">
-        <x-input-label value="Ou envie um arquivo de imagem (opcional)" />
-        <input type="file" name="assinatura" accept="image/*" class="mt-1">
+        <x-input-label value="Ou envie um arquivo de imagem (opcional)" class="text-gray-700 dark:text-gray-300" />
+        <input type="file" name="assinatura" accept="image/*" class="mt-1 text-gray-900 dark:text-gray-100">
         <x-input-error :messages="$errors->get('assinatura')" class="mt-2" />
     </div>
 
     @if ($isEdit && $registro->assinatura_path)
         <div class="mt-3">
             <div class="text-xs text-gray-600 dark:text-gray-300 mb-1">Assinatura atual</div>
-            <img class="h-24 rounded border" src="{{ asset('storage/' . $registro->assinatura_path) }}"
-                alt="Assinatura atual">
+            <img class="h-24 rounded border border-gray-300 dark:border-gray-700 bg-white"
+                src="{{ asset('storage/' . $registro->assinatura_path) }}" alt="Assinatura atual">
         </div>
     @endif
 </div>
@@ -70,17 +76,19 @@
         <template x-if="tipo === 'carro'">
             <section x-transition>
                 <div class="mb-1 flex items-center justify-between">
-                    <h3 class="text-base sm:text-lg font-medium">Fotos — Carro</h3>
-                    <p class="text-xs sm:text-sm text-gray-600">Campos com <span class="text-red-600 font-semibold">*</span>
-                        são obrigatórios.</p>
+                    <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Fotos — Carro</h3>
+                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        Campos com <span class="text-red-600 font-semibold">*</span> são obrigatórios.
+                    </p>
                 </div>
-                <div class="divide-y rounded-md border">
+                <div class="divide-y rounded-md border border-gray-200 dark:border-gray-700 dark:divide-gray-700">
                     <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
                         @foreach ($carroObrig as $name => $label)
                             <div>
-                                <x-input-label :for="$name" :value="$label" />
+                                <x-input-label :for="$name" :value="$label"
+                                    class="text-gray-700 dark:text-gray-300" />
                                 <input type="file" name="{{ $name }}" id="{{ $name }}" accept="image/*"
-                                    required class="mt-1 block w-full">
+                                    required class="mt-1 block w-full text-gray-900 dark:text-gray-100">
                                 <x-input-error :messages="$errors->get($name)" class="mt-2" />
                             </div>
                         @endforeach
@@ -88,9 +96,10 @@
                     <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
                         @foreach ($carroOpc as $name => $label)
                             <div>
-                                <x-input-label :for="$name" :value="$label" />
+                                <x-input-label :for="$name" :value="$label"
+                                    class="text-gray-700 dark:text-gray-300" />
                                 <input type="file" name="{{ $name }}" id="{{ $name }}" accept="image/*"
-                                    class="mt-1 block w-full">
+                                    class="mt-1 block w-full text-gray-900 dark:text-gray-100">
                                 <x-input-error :messages="$errors->get($name)" class="mt-2" />
                             </div>
                         @endforeach
@@ -102,17 +111,19 @@
         <template x-if="tipo === 'moto'">
             <section x-transition>
                 <div class="mb-1 flex items-center justify-between">
-                    <h3 class="text-base sm:text-lg font-medium">Fotos — Moto</h3>
-                    <p class="text-xs sm:text-sm text-gray-600">Campos com <span class="text-red-600 font-semibold">*</span>
-                        são obrigatórios.</p>
+                    <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Fotos — Moto</h3>
+                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        Campos com <span class="text-red-600 font-semibold">*</span> são obrigatórios.
+                    </p>
                 </div>
-                <div class="divide-y rounded-md border">
+                <div class="divide-y rounded-md border border-gray-200 dark:border-gray-700 dark:divide-gray-700">
                     <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
                         @foreach ($motoObrig as $name => $label)
                             <div>
-                                <x-input-label :for="$name" :value="$label" />
+                                <x-input-label :for="$name" :value="$label"
+                                    class="text-gray-700 dark:text-gray-300" />
                                 <input type="file" name="{{ $name }}" id="{{ $name }}" accept="image/*"
-                                    required class="mt-1 block w-full">
+                                    required class="mt-1 block w-full text-gray-900 dark:text-gray-100">
                                 <x-input-error :messages="$errors->get($name)" class="mt-2" />
                             </div>
                         @endforeach
@@ -120,9 +131,10 @@
                     <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
                         @foreach ($motoOpc as $name => $label)
                             <div>
-                                <x-input-label :for="$name" :value="$label" />
+                                <x-input-label :for="$name" :value="$label"
+                                    class="text-gray-700 dark:text-gray-300" />
                                 <input type="file" name="{{ $name }}" id="{{ $name }}" accept="image/*"
-                                    class="mt-1 block w-full">
+                                    class="mt-1 block w-full text-gray-900 dark:text-gray-100">
                                 <x-input-error :messages="$errors->get($name)" class="mt-2" />
                             </div>
                         @endforeach
@@ -136,20 +148,25 @@
     @if ($isEdit)
         {{-- imagens atuais + remover --}}
         <div>
-            <x-input-label value="Imagens atuais" />
+            <x-input-label value="Imagens atuais" class="text-gray-700 dark:text-gray-300" />
             @if ($registro->imagens->isEmpty())
-                <p class="text-sm text-gray-500 mt-2">Nenhuma imagem enviada.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Nenhuma imagem enviada.</p>
             @else
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
                     @foreach ($registro->imagens as $img)
-                        <div class="rounded border p-2">
-                            <img class="w-full h-32 object-cover rounded" src="{{ asset('storage/' . $img->path) }}"
-                                alt="{{ $img->posicao }}">
-                            <label class="mt-2 inline-flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="remove_imagens[]" value="{{ $img->id }}">
+                        <div class="rounded border p-2 border-gray-200 dark:border-gray-700">
+                            <img class="w-full h-32 object-cover rounded border border-gray-200 dark:border-gray-700"
+                                src="{{ asset('storage/' . $img->path) }}" alt="{{ $img->posicao }}">
+                            <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                <input type="checkbox" name="remove_imagens[]" value="{{ $img->id }}"
+                                    class="rounded border-gray-300 text-indigo-600
+                                              focus:ring-indigo-500 dark:focus:ring-indigo-400
+                                              dark:border-gray-700 dark:bg-gray-900">
                                 <span>Remover</span>
                             </label>
-                            <div class="text-xs text-gray-500 mt-1">{{ $img->posicao ?? '—' }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {{ $img->posicao ?? '—' }}
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -158,16 +175,19 @@
 
         {{-- troca por posição (opcional) --}}
         <div class="mt-6">
-            <x-input-label value="Substituir fotos por posição (opcional)" />
-            <p class="text-xs text-gray-500 mb-2">Se enviar uma foto para uma posição, ela substitui a anterior.</p>
+            <x-input-label value="Substituir fotos por posição (opcional)" class="text-gray-700 dark:text-gray-300" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Se enviar uma foto para uma posição, ela substitui a anterior.
+            </p>
 
             <template x-if="tipo === 'carro'">
                 <div class="grid grid-cols-1 gap-4 p-0 sm:grid-cols-2">
                     @foreach (array_merge($carroObrig, $carroOpc) as $name => $label)
                         <div>
-                            <x-input-label :for="'r_' . $name" :value="$label" />
+                            <x-input-label :for="'r_' . $name" :value="$label"
+                                class="text-gray-700 dark:text-gray-300" />
                             <input type="file" name="{{ $name }}" id="r_{{ $name }}"
-                                accept="image/*" class="mt-1 block w-full">
+                                accept="image/*" class="mt-1 block w-full text-gray-900 dark:text-gray-100">
                             <x-input-error :messages="$errors->get($name)" class="mt-2" />
                         </div>
                     @endforeach
@@ -178,9 +198,10 @@
                 <div class="grid grid-cols-1 gap-4 p-0 sm:grid-cols-2">
                     @foreach (array_merge($motoObrig, $motoOpc) as $name => $label)
                         <div>
-                            <x-input-label :for="'r_' . $name" :value="$label" />
+                            <x-input-label :for="'r_' . $name" :value="$label"
+                                class="text-gray-700 dark:text-gray-300" />
                             <input type="file" name="{{ $name }}" id="r_{{ $name }}"
-                                accept="image/*" class="mt-1 block w-full">
+                                accept="image/*" class="mt-1 block w-full text-gray-900 dark:text-gray-100">
                             <x-input-error :messages="$errors->get($name)" class="mt-2" />
                         </div>
                     @endforeach
@@ -190,8 +211,9 @@
 
         {{-- extras (sem posição) --}}
         <div class="mt-6">
-            <x-input-label value="Adicionar outras imagens (opcional)" />
-            <input type="file" name="imagens[]" multiple accept="image/*" class="mt-2">
+            <x-input-label value="Adicionar outras imagens (opcional)" class="text-gray-700 dark:text-gray-300" />
+            <input type="file" name="imagens[]" multiple accept="image/*"
+                class="mt-2 text-gray-900 dark:text-gray-100">
             <x-input-error :messages="$errors->get('imagens')" class="mt-2" />
             <x-input-error :messages="$errors->get('imagens.*')" class="mt-2" />
         </div>
@@ -202,6 +224,12 @@
     <style>
         .e-signpad canvas {
             touch-action: none;
+        }
+
+        /* Força fundo branco na assinatura (canvas e imagem) em qualquer tema */
+        .e-signpad canvas,
+        img[alt="Assinatura atual"] {
+            background: #ffffff !important;
         }
     </style>
 @endpush

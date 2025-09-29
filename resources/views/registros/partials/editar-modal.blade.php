@@ -4,17 +4,19 @@
         {{-- HEADER --}}
         <div
             class="sticky top-0 z-10 flex items-center justify-between gap-3
-                border-b border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-800 px-4 py-3">
+                   border-b border-gray-200 dark:border-gray-700
+                   bg-white dark:bg-gray-800 px-4 py-3">
             <h3 class="truncate text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Editar registro <span x-text="titulo || ''"></span>
             </h3>
-            <button @click="close()" class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            <button @click="close()"
+                class="rounded-md p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300
+                       dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
                 aria-label="Fechar">✕</button>
         </div>
 
         {{-- BODY --}}
-        <div class="p-3 sm:p-4 max-h-[85vh] overflow-y-auto">
+        <div class="p-3 sm:p-4 max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-900 modal-edit-body">
             <template x-if="loading">
                 <div class="space-y-3">
                     <div class="h-5 w-48 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
@@ -26,6 +28,28 @@
         </div>
     </div>
 </x-modal>
+
+{{-- Somente ajustes visuais (dark-mode e assinatura branca) --}}
+<style>
+/* Força fundo branco onde a assinatura é exibida para manter contraste no modo escuro */
+.modal-edit-body img[alt*="Assinatura"],
+.modal-edit-body .assinatura-atual img,
+.modal-edit-body .signature-pad canvas,
+.modal-edit-body canvas[data-role="signature"],
+.modal-edit-body canvas.signature-pad,
+.modal-edit-body .signature canvas {
+  background: #ffffff !important;
+}
+
+/* Bordas e textos dos blocos de mídia/assinatura em dark */
+@media (prefers-color-scheme: dark) {
+  .modal-edit-body .border,
+  .modal-edit-body img,
+  .modal-edit-body canvas {
+    border-color: rgb(55 65 81 / 1) !important; /* dark:border-gray-700 */
+  }
+}
+</style>
 
 @push('scripts')
     <script>
@@ -68,7 +92,7 @@
                             requestAnimationFrame(() => window.initSignaturePad?.(this.$refs.container));
                         });
 
-                        // MUITO IMPORTANTE: inicializar a assinatura após injetar o HTML
+                        // inicializa a assinatura após injetar o HTML (se existir)
                         if (window.initSignaturePad) window.initSignaturePad(this.$refs.container);
 
                         this.$nextTick(() => this.$refs.container.querySelector('input,select,textarea')?.focus());

@@ -8,25 +8,37 @@
 
     {{-- Placa --}}
     <div class="{{ $modo === 'desktop' ? 'md:col-span-2' : '' }}">
-        <x-input-label for="placa" value="Placa" class="text-xs"  />
+        <x-input-label for="placa" value="Placa" class="text-xs text-gray-700 dark:text-gray-300"  />
         <x-text-input id="placa" name="placa" type="text" placeholder="BRA-2E19 || OTM-2022"
-            class="mt-1 block w-full text-sm h-10 uppercase"
+            class="mt-1 block w-full text-sm h-10 uppercase
+                   border-gray-300 text-gray-900 placeholder-gray-400
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
             value="{{ request('placa') }}" />
     </div>
 
     {{-- Modelo --}}
     <div class="{{ $modo === 'desktop' ? 'md:col-span-2' : '' }}">
-        <x-input-label for="modelo" value="Modelo (contém)" class="text-xs" />
+        <x-input-label for="modelo" value="Modelo (contém)" class="text-xs text-gray-700 dark:text-gray-300" />
         <x-text-input id="modelo" name="modelo" type="text" placeholder="Uno || Palio || Civic"
-            class="mt-1 block w-full text-sm h-10"
+            class="mt-1 block w-full text-sm h-10
+                   border-gray-300 text-gray-900 placeholder-gray-400
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
             value="{{ request('modelo') }}" />
     </div>
 
     {{-- Marca --}}
     <div>
-        <x-input-label for="marca_id" value="Marca" class="text-xs" />
+        <x-input-label for="marca_id" value="Marca" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="marca_id" name="marca_id"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todas</option>
             @foreach($marcas as $m)
                 <option value="{{ $m->id }}" @selected(request('marca_id') == $m->id)>{{ $m->nome }}</option>
@@ -36,9 +48,13 @@
 
     {{-- Item --}}
     <div>
-        <x-input-label for="item_id" value="Item" class="text-xs" />
+        <x-input-label for="item_id" value="Item" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="item_id" name="item_id"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todos</option>
             @foreach($itens as $i)
                 <option value="{{ $i->id }}" @selected(request('item_id') == $i->id)>{{ $i->nome }}</option>
@@ -48,9 +64,13 @@
 
     {{-- Tipo --}}
     <div>
-        <x-input-label for="tipo" value="Tipo" class="text-xs" />
+        <x-input-label for="tipo" value="Tipo" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="tipo" name="tipo"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todos</option>
             <option value="carro" @selected(request('tipo')==='carro')>Carro</option>
             <option value="moto"  @selected(request('tipo')==='moto')>Moto</option>
@@ -59,9 +79,13 @@
 
     {{-- Status --}}
     <div>
-        <x-input-label for="status_patio" value="Status (Pátio)" class="text-xs" />
+        <x-input-label for="status_patio" value="Status (Pátio)" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="status_patio" name="status_patio"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todos</option>
             <option value="no_patio" @selected(request('status_patio')==='no_patio')>No pátio</option>
             <option value="saiu"     @selected(request('status_patio')==='saiu')>Saiu</option>
@@ -70,9 +94,13 @@
 
     {{-- Usuário --}}
     <div class="{{ $modo === 'desktop' ? 'lg:col-span-2' : '' }}">
-        <x-input-label for="user_id" value="Usuário" class="text-xs" />
+        <x-input-label for="user_id" value="Usuário" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="user_id" name="user_id"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todos</option>
             @foreach($usuarios as $u)
                 <option value="{{ $u->id }}" @selected(request('user_id')==$u->id)>{{ $u->name }}</option>
@@ -82,23 +110,35 @@
 
     {{-- De / Até --}}
     <div>
-        <x-input-label for="from" value="De" class="text-xs" />
+        <x-input-label for="from" value="De" class="text-xs text-gray-700 dark:text-gray-300" />
         <x-text-input id="from" name="from" type="date"
-            class="mt-1 block w-full text-sm h-10"
+            class="mt-1 block w-full text-sm h-10
+                   border-gray-300 text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
             value="{{ request('from') }}" />
     </div>
     <div>
-        <x-input-label for="to" value="Até" class="text-xs" />
+        <x-input-label for="to" value="Até" class="text-xs text-gray-700 dark:text-gray-300" />
         <x-text-input id="to" name="to" type="date"
-            class="mt-1 block w-full text-sm h-10"
+            class="mt-1 block w-full text-sm h-10
+                   border-gray-300 text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
             value="{{ request('to') }}" />
     </div>
 
     {{-- Ano --}}
     <div>
-        <x-input-label for="ano" value="Ano" class="text-xs" />
+        <x-input-label for="ano" value="Ano" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="ano" name="ano" x-model="ano"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todos</option>
             @foreach($anos as $a)
                 <option value="{{ $a->ano }}" @selected((string)request('ano')===(string)$a->ano)>{{ $a->ano }}</option>
@@ -108,9 +148,13 @@
 
     {{-- Mês (nomes; depende do ano) --}}
     <div>
-        <x-input-label for="mes" value="Mês" class="text-xs" />
+        <x-input-label for="mes" value="Mês" class="text-xs text-gray-700 dark:text-gray-300" />
         <select id="mes" name="mes" x-model="mes"
-            class="mt-1 block w-full text-sm h-10 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+            class="mt-1 block w-full text-sm h-10 rounded-md
+                   border-gray-300 bg-white text-gray-900
+                   focus:border-indigo-500 focus:ring-indigo-500
+                   dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                   dark:focus:border-indigo-400 dark:focus:ring-indigo-400">
             <option value="">Todos</option>
 
             {{-- quando há ano, renderize somente os meses existentes no ano --}}

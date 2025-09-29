@@ -22,7 +22,9 @@
                     <span x-text="modal.no_patio ? 'No pátio' : 'Saiu'"></span> •
                 </p>
             </div>
-            <button @click="close()" class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            <button @click="close()"
+                class="rounded-md p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300
+                       dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
                 aria-label="Fechar">✕</button>
         </div>
 
@@ -35,7 +37,9 @@
                 <div class="space-y-4 sm:space-y-6">
                     <div class="aspect-video w-full rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
                     <div class="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-                    <div class="h-24 sm:h-28 lg:h-32 w-auto rounded border object-contain dark:border-gray-700"></div>
+                    <div
+                        class="h-24 sm:h-28 lg:h-32 w-auto rounded border object-contain border-gray-200 dark:border-gray-700">
+                    </div>
                 </div>
             </template>
 
@@ -49,9 +53,9 @@
                         aspect-video
                         w-full
                         md:max-w-3xl          /* ~768px */
-                        lg:max-w-[900px]      /* ~900px no desktop */
-                        xl:max-w-[1000px]     /* ~1000px em telas maiores */
-                        2xl:max-w-[1100px]    /* limite superior opcional */
+                        lg:max-w-[700px]      /* ~900px no desktop */
+                        xl:max-w-[800px]     /* ~1000px em telas maiores */
+                        2xl:max-w-[900]    /* limite superior opcional */ 
                         max-h-[62vh]          /* nunca passa 62% da altura */
                         lg:max-h-[58vh]       /* ainda menor em desktop */">
                         <img :src="modal.slides?.[slideIdx]?.url_full || modal.slides?.[slideIdx]?.url || ''"
@@ -64,9 +68,13 @@
                             <span x-text="(slideIdx + 1) + ' / ' + modal.slides.length"></span>
                         </div>
                         <button type="button" @click="prev()"
-                            class="absolute left-2  top-1/2 -translate-y-1/2 rounded-full bg-white/85 px-3 py-1.5 text-lg">‹</button>
-                        <button type="button" @click="next()"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/85 px-3 py-1.5 text-lg">›</button>
+                            class="absolute left-2  top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-lg
+                                   bg-white/85 text-gray-900 ring-1 ring-gray-200
+                                   hover:bg-white dark:bg-gray-900/70 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-900/80">‹</button>
+                        <button type="button" @click="next"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-lg
+                                   bg-white/85 text-gray-900 ring-1 ring-gray-200
+                                   hover:bg-white dark:bg-gray-900/70 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-900/80">›</button>
                     </div>
 
                     {{-- Mini-carrossel com vizinhos (prev | atual | next) para navegação rápida --}}
@@ -74,10 +82,11 @@
                         <div class="mt-3 flex items-center justify-center gap-3 sm:gap-2.5">
                             <template x-for="i in neighbors(slideIdx)" :key="'thumb-' + i">
                                 <button type="button"
-                                    class="relative w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 shrink-0 rounded overflow-hidden ring-2 transition"
+                                    class="relative w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 shrink-0 rounded overflow-hidden ring-2 transition
+                                           ring-transparent opacity-80 hover:ring-gray-300 dark:hover:ring-gray-600"
                                     :class="i === idxWrap(slideIdx) ?
-                                        'ring-indigo-500 scale-[1.06]' :
-                                        'ring-transparent opacity-80 hover:ring-gray-300 scale-95'"
+                                        'ring-indigo-500 scale-[1.06] dark:ring-indigo-400' :
+                                        'scale-95'"
                                     @click="go(i)">
                                     <img class="absolute inset-0 w-full h-full object-cover select-none"
                                         :alt="modal.slides[i]?.label || ''" :src="modal.slides[i]?.url || _PH"
@@ -135,7 +144,8 @@
                             <div class="mt-1 flex flex-wrap gap-2">
                                 <template x-for="(nome, idx) in modal.itens" :key="idx">
                                     <span
-                                        class="rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-[11px] sm:text-xs text-gray-700 dark:text-gray-200"
+                                        class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] sm:text-xs text-gray-700
+                                               dark:bg-gray-700 dark:text-gray-200"
                                         x-text="nome"></span>
                                 </template>
                             </div>
@@ -182,13 +192,15 @@
                                 <div class="sm:justify-self-end">
                                     <template x-if="modal.assinatura">
                                         <img :src="modal.assinatura"
-                                            class="h-28 w-auto rounded border object-contain dark:border-gray-700"
+                                            class="h-28 w-auto rounded border object-contain border-gray-200 dark:border-gray-700 bg-white"
                                             alt="Assinatura do reboque">
                                     </template>
                                     <template x-if="!modal.assinatura">
                                         <div
-                                            class="h-28 w-full sm:w-40 rounded border border-dashed dark:border-gray-700
-                      flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                                            class="h-28 w-full sm:w-40 rounded border border-dashed
+                               border-gray-200 text-gray-500
+                               dark:border-gray-700 dark:text-gray-400
+                               flex items-center justify-center text-xs bg-white">
                                             Sem assinatura
                                         </div>
                                     </template>
@@ -196,6 +208,7 @@
                             </div>
                         </div>
                     </template>
+
                 </div>
             </template>
         </div>
