@@ -10,10 +10,10 @@
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
                 @foreach ($roles as $role)
                     @can('assign-role', [$role->name, $user])
-                        <label class="inline-flex items-center gap-2">
+                        <label class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-200">
                             <input type="checkbox" name="roles[]" value="{{ $role->id }}"
                                    @checked($user->roles->pluck('id')->contains($role->id))
-                                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                   class="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-400">
                             <span>{{ $role->name }}</span>
                         </label>
                     @endcan
@@ -31,16 +31,16 @@
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 max-h-80 overflow-auto pr-1">
                 @foreach ($permissions as $perm)
                     @can('assign-permission', $perm->name)
-                        <label class="inline-flex items-center gap-2">
+                        <label class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-200">
                             <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
                                    @checked($user->permissions->pluck('id')->contains($perm->id))
-                                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                   class="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-400">
                             <span class="text-sm">{{ $perm->name }}</span>
                         </label>
                     @endcan
                 @endforeach
             </div>
-            <p class="mt-2 text-xs text-gray-500">
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 Dica: prefira conceder via papéis. Permissões diretas são úteis para exceções.
             </p>
         </div>
