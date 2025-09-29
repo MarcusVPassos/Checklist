@@ -4,20 +4,20 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Registros</h2>
             <div class="flex gap-2">
                 @can('registros.create')
-                <a href="{{ route('registros.create') }}"
-                   class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow
+                    <a href="{{ route('registros.create') }}"
+                        class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow
                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                           dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-900">
-                    Novo Registro
-                </a>
+                        Novo Registro
+                    </a>
                 @endcan
                 @canany(['registros.restore', 'registros.force-delete'])
-                <a href="{{ route('registros.trashed') }}"
-                   class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow
+                    <a href="{{ route('registros.trashed') }}"
+                        class="hidden sm:inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow
                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                           dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-900">
-                    Lixeira
-                </a>
+                        Lixeira
+                    </a>
                 @endcanany
             </div>
         </div>
@@ -29,20 +29,20 @@
             {{-- atalhos visíveis só no mobile --}}
             <div class="flex w-full gap-2">
                 @can('registros.create')
-                <a href="{{ route('registros.create') }}"
-                   class="md:hidden p-3 text-center rounded-md bg-indigo-600 text-white text-md w-full
+                    <a href="{{ route('registros.create') }}"
+                        class="md:hidden p-3 text-center rounded-md bg-indigo-600 text-white text-md w-full
                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                           dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-900">
-                    Novo
-                </a>
+                        Novo
+                    </a>
                 @endcan
                 @canany(['registros.restore', 'registros.force-delete'])
-                <a href="{{ route('registros.trashed') }}"
-                   class="md:hidden p-3 text-center rounded-md bg-indigo-600 text-white text-md w-full
+                    <a href="{{ route('registros.trashed') }}"
+                        class="md:hidden p-3 text-center rounded-md bg-indigo-600 text-white text-md w-full
                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                           dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-900">
-                    Lixeira
-                </a>
+                        Lixeira
+                    </a>
                 @endcanany
             </div>
 
@@ -53,10 +53,11 @@
                     <button type="button"
                         class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3
                                flex items-center justify-between p-4
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                        @click="open = !open" aria-controls="mobileFilterPanel" :aria-expanded="open.toString()">
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Filtros</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                         </svg>
@@ -93,7 +94,7 @@
 
             {{-- GRID dos cards (responsivo) --}}
             <div id="cardsGrid"
-                 class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full">
+                class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full">
                 @include('registros.cards', ['registros' => $registros])
             </div>
 
@@ -133,14 +134,20 @@
                         try {
                             const qs = window.location.search;
                             const join = qs ? `${qs}&` : '?';
-                            const url = `${baseUrl}${join}cursor=${encodeURIComponent(this.nextCursor)}`;
-                            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            const url =
+                            `${baseUrl}${join}cursor=${encodeURIComponent(this.nextCursor)}`;
+                            const res = await fetch(url, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            });
                             const html = await res.text();
                             const doc = new DOMParser().parseFromString(html, 'text/html');
                             doc.querySelectorAll('#cardsGrid > *').forEach(el =>
                                 document.querySelector('#cardsGrid').appendChild(el)
                             );
-                            this.nextCursor = doc.querySelector('[data-next-cursor]')?.getAttribute('data-next-cursor') || null;
+                            this.nextCursor = doc.querySelector('[data-next-cursor]')?.getAttribute(
+                                'data-next-cursor') || null;
                         } finally {
                             this.loading = false;
                         }

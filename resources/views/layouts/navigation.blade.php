@@ -16,16 +16,16 @@
                         {{ __('Checklist') }}
                     </x-nav-link>
                     @can('marcas.create')
-                    <x-nav-link :href="route('marcas.index')" :active="request()->routeIs('marcas.index')">
-                        {{ __('Marcas') }}
-                    </x-nav-link>
+                        <x-nav-link :href="route('marcas.index')" :active="request()->routeIs('marcas.index')">
+                            {{ __('Marcas') }}
+                        </x-nav-link>
                     @endcan
                     @can('itens.create')
-                    <x-nav-link :href="route('itens.index')" :active="request()->routeIs('itens.index')">
-                        {{ __('Itens do Veículo') }}
-                    </x-nav-link>
+                        <x-nav-link :href="route('itens.index')" :active="request()->routeIs('itens.index')">
+                            {{ __('Itens do Veículo') }}
+                        </x-nav-link>
                     @endcan
-                    @can ('users.view')
+                    @can('users.view')
                         <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
                             {{ __('Usuários e Permissões') }}
                         </x-nav-link>
@@ -95,6 +95,26 @@
             <x-responsive-nav-link :href="route('registros.index')" :active="request()->routeIs('registros.index')">
                 {{ __('Checklist') }}
             </x-responsive-nav-link>
+            @can('marcas.create')
+                <x-responsive-nav-link :href="route('marcas.index')" :active="request()->routeIs('marcas.index')">
+                    {{ __('Marcas') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('itens.create')
+                <x-responsive-nav-link :href="route('itens.index')" :active="request()->routeIs('itens.index')">
+                    {{ __('Itens do Veículo') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('users.view')
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
+                    {{ __('Usuários e Permissões') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('logs.view')
+                <x-responsive-nav-link :href="route('admin.logs.index')" :active="request()->routeIs('admin.logs.index')">
+                    {{ __('Auditória') }}
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- Responsive Settings Options -->
@@ -115,6 +135,7 @@
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
                 </form>
+                <x-theme-toggle/>
             </div>
         </div>
     </div>
