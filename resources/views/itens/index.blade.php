@@ -62,9 +62,9 @@
                             <tbody class="divide-y divide-gray-200/60 dark:divide-gray-700/60">
                                 @forelse($itens as $i)
                                     <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
-                                        <td class="py-2 pr-4 text-gray-900 dark:text-gray-100">{{ $i->nome }}</td>
+                                        <td class="pl-1 py-2 pr-4 text-gray-900 dark:text-gray-100">{{ $i->nome }}</td>
                                         <td class="py-2 pr-4 text-gray-700 dark:text-gray-300">{{ $i->created_at?->format('d/m/Y H:i') }}</td>
-                                        <td class="py-2 pr-0 text-right">
+                                        <td class="py-2 pr-1 text-right">
                                             @can('itens.update')
                                                 <button
                                                     type="button"
