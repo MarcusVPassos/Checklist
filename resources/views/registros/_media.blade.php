@@ -32,7 +32,7 @@
 @endphp
 
 {{-- ========== ASSINATURA ========== --}}
-<div class="mt-8 e-signpad">
+<div class="mt-8 e-signpad px-4 sm:px-6">
     <x-input-label value="Assinatura {{ $isEdit ? '(opcional para substituir)' : '(obrigatória)' }}"
         class="text-gray-700 dark:text-gray-300" />
 
@@ -56,14 +56,14 @@
     {{-- Fallback por arquivo --}}
     <div class="mt-3">
         <x-input-label value="Ou envie um arquivo de imagem (opcional)" class="text-gray-700 dark:text-gray-300" />
-        <input type="file" name="assinatura" accept="image/*" class="mt-1 text-gray-900 dark:text-gray-100">
+        <input type="file" name="assinatura" accept="image/*" class="mt-1 w-full text-gray-900 dark:text-gray-100">
         <x-input-error :messages="$errors->get('assinatura')" class="mt-2" />
     </div>
 
     @if ($isEdit && $registro->assinatura_path)
         <div class="mt-3">
             <div class="text-xs text-gray-600 dark:text-gray-300 mb-1">Assinatura atual</div>
-            <img class="h-24 rounded border border-gray-300 dark:border-gray-700 bg-white"
+            <img class="h-20 sm:h-24 rounded border border-gray-300 dark:border-gray-700 bg-white"
                 src="{{ asset('storage/' . $registro->assinatura_path) }}" alt="Assinatura atual">
         </div>
     @endif
@@ -74,15 +74,15 @@
     {{-- CREATE: inputs por posição (obrigatórios variam por tipo) --}}
     @unless ($isEdit)
         <template x-if="tipo === 'carro'">
-            <section x-transition>
-                <div class="mb-1 flex items-center justify-between">
+            <section x-transition class="px-4 sm:px-6">
+                <div class="mb-2 flex items-center justify-between">
                     <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Fotos — Carro</h3>
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         Campos com <span class="text-red-600 font-semibold">*</span> são obrigatórios.
                     </p>
                 </div>
                 <div class="divide-y rounded-md border border-gray-200 dark:border-gray-700 dark:divide-gray-700">
-                    <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:grid-cols-2">
                         @foreach ($carroObrig as $name => $label)
                             <div>
                                 <x-input-label :for="$name" :value="$label"
@@ -93,7 +93,7 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:grid-cols-2">
                         @foreach ($carroOpc as $name => $label)
                             <div>
                                 <x-input-label :for="$name" :value="$label"
@@ -109,15 +109,15 @@
         </template>
 
         <template x-if="tipo === 'moto'">
-            <section x-transition>
-                <div class="mb-1 flex items-center justify-between">
+            <section x-transition class="px-4 sm:px-6">
+                <div class="mb-2 flex items-center justify-between">
                     <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Fotos — Moto</h3>
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         Campos com <span class="text-red-600 font-semibold">*</span> são obrigatórios.
                     </p>
                 </div>
                 <div class="divide-y rounded-md border border-gray-200 dark:border-gray-700 dark:divide-gray-700">
-                    <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:grid-cols-2">
                         @foreach ($motoObrig as $name => $label)
                             <div>
                                 <x-input-label :for="$name" :value="$label"
@@ -128,7 +128,7 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:grid-cols-2">
                         @foreach ($motoOpc as $name => $label)
                             <div>
                                 <x-input-label :for="$name" :value="$label"
@@ -147,15 +147,15 @@
     {{-- EDIT: lista/remoção + troca por posição + extras --}}
     @if ($isEdit)
         {{-- imagens atuais + remover --}}
-        <div>
+        <div class="px-4 sm:px-6">
             <x-input-label value="Imagens atuais" class="text-gray-700 dark:text-gray-300" />
             @if ($registro->imagens->isEmpty())
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Nenhuma imagem enviada.</p>
             @else
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-3">
                     @foreach ($registro->imagens as $img)
                         <div class="rounded border p-2 border-gray-200 dark:border-gray-700">
-                            <img class="w-full h-32 object-cover rounded border border-gray-200 dark:border-gray-700"
+                            <img class="w-full h-24 sm:h-32 object-cover rounded border border-gray-200 dark:border-gray-700"
                                 src="{{ asset('storage/' . $img->path) }}" alt="{{ $img->posicao }}">
                             <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                 <input type="checkbox" name="remove_imagens[]" value="{{ $img->id }}"
@@ -174,14 +174,14 @@
         </div>
 
         {{-- troca por posição (opcional) --}}
-        <div class="mt-6">
+        <div class="mt-6 px-4 sm:px-6">
             <x-input-label value="Substituir fotos por posição (opcional)" class="text-gray-700 dark:text-gray-300" />
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 Se enviar uma foto para uma posição, ela substitui a anterior.
             </p>
 
             <template x-if="tipo === 'carro'">
-                <div class="grid grid-cols-1 gap-4 p-0 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-3 sm:gap-4 p-0 sm:grid-cols-2">
                     @foreach (array_merge($carroObrig, $carroOpc) as $name => $label)
                         <div>
                             <x-input-label :for="'r_' . $name" :value="$label"
@@ -195,7 +195,7 @@
             </template>
 
             <template x-if="tipo === 'moto'">
-                <div class="grid grid-cols-1 gap-4 p-0 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-3 sm:gap-4 p-0 sm:grid-cols-2">
                     @foreach (array_merge($motoObrig, $motoOpc) as $name => $label)
                         <div>
                             <x-input-label :for="'r_' . $name" :value="$label"
@@ -210,10 +210,10 @@
         </div>
 
         {{-- extras (sem posição) --}}
-        <div class="mt-6">
+        <div class="mt-6 px-4 sm:px-6">
             <x-input-label value="Adicionar outras imagens (opcional)" class="text-gray-700 dark:text-gray-300" />
             <input type="file" name="imagens[]" multiple accept="image/*"
-                class="mt-2 text-gray-900 dark:text-gray-100">
+                class="mt-2 w-full text-gray-900 dark:text-gray-100">
             <x-input-error :messages="$errors->get('imagens')" class="mt-2" />
             <x-input-error :messages="$errors->get('imagens.*')" class="mt-2" />
         </div>
@@ -238,7 +238,7 @@
     {{-- Carregue essa lib uma única vez no layout ou aqui (precisa estar presente no modal também) --}}
     <script src="https://unpkg.com/signature_pad@4.0.10/dist/signature_pad.umd.min.js"></script>
     <script>
-        // Inicializa a assinatura dentro de um "root" (document ou um container do modal)
+        // (sem mudanças de funcionalidade)
         window.initSignaturePad = function initSignaturePad(root = document) {
             const box = root.querySelector('.e-signpad');
             if (!box) return;
@@ -248,28 +248,23 @@
             const clear = box.querySelector('#sig-clear');
             const hidden = box.querySelector('#sig-b64');
 
-            // evita inicializar duas vezes no mesmo nó
             if (!canvas || canvas.__pad) return;
 
             const pad = new SignaturePad(canvas, {
                 backgroundColor: 'rgba(255,255,255,1)'
             });
-            canvas.__pad = pad; // marca
+            canvas.__pad = pad;
 
-            // 200px de altura visual
             canvas.style.height = '200px';
 
             const fit = () => {
-                // Só ajusta se o elemento estiver visível (no modal aberto ele estará)
                 const rect = canvas.getBoundingClientRect();
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 const data = pad.toData();
 
-                // width/height CSS
                 canvas.style.width = rect.width + 'px';
                 canvas.style.height = '200px';
 
-                // width/height internos (alta definição)
                 canvas.width = Math.round(rect.width * ratio);
                 canvas.height = Math.round(200 * ratio);
 
@@ -280,7 +275,6 @@
                 if (data.length) pad.fromData(data);
             };
 
-            // Ajusta após o layout “assentar”
             requestAnimationFrame(fit);
             window.addEventListener('resize', () => requestAnimationFrame(fit), {
                 passive: true
@@ -306,7 +300,6 @@
             });
         };
 
-        // Para páginas de CREATE (carregadas inteiras)
         document.addEventListener('DOMContentLoaded', () => window.initSignaturePad(document));
     </script>
 @endpush
